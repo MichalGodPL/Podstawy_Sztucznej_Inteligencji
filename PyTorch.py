@@ -61,7 +61,7 @@ class ImprovedHeartDiseaseModel(nn.Module):
         self.fc4 = nn.Linear(64, 32)
         self.bn4 = nn.BatchNorm1d(32)
         self.output = nn.Linear(32, 1)
-        self.dropout = 0.15
+        self.dropout = 0
         self.initialize_weights()
 
     def initialize_weights(self):
