@@ -57,7 +57,7 @@ df = df.drop_duplicates()
 
 # Usuwanie kolumn o niskiej korelacji z "Heart Attack Risk"
 
-threshold = 0.0057
+threshold = 0.002
 
 if "Heart Attack Risk" in df.columns:
 
