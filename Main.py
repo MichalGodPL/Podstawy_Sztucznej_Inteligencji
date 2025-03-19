@@ -1,5 +1,4 @@
 import subprocess
-import tensorflow as tf
 import time
 
 # Powiadomienie o rozpoczęciu działania SI

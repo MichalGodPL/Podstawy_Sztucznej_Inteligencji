@@ -6,10 +6,13 @@ import matplotlib.pyplot as plt
 
 import seaborn as sns
 
+from sklearn.utils import resample
+
 
 # 1. Wczytanie i Wstępna Analiza Danych
 
 df = pd.read_csv("AtakSerca.csv")
+
 
 # Tworzenie Podsumowania Danych
 
@@ -65,6 +68,19 @@ if "Heart Attack Risk" in df.columns:
     print(f"Usunięto kolumny: {list(low_corr_cols)}")
 
     df = df.drop(columns=low_corr_cols)
+
+
+# Balance the dataset by oversampling the minority class
+
+if "Heart Attack Risk" in df.columns:
+
+    majority = df[df["Heart Attack Risk"] == 0]
+    
+    minority = df[df["Heart Attack Risk"] == 1]
+
+    minority_upsampled = resample(minority, replace=True, n_samples=len(majority), random_state=42)
+    
+    df = pd.concat([majority, minority_upsampled])
 
 
 # 3. Eksploracyjna Analiza danych (EDA)
