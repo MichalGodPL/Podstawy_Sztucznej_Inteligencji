@@ -17,125 +17,7 @@
     <!-- Import Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <style>
-        /* Ustawienie Poppins jako domyślnej czcionki */
-        body, html {
-            font-family: 'Poppins', sans-serif;
-        }
-
-        /* Styl dla select i input w stylu iOS - bez strzałek */
-        select, input[type="number"] {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            transition: all 0.2s ease-in-out;
-        }
-
-        /* Animacja przy kliknięciu/fokusie */
-        select:focus, input[type="number"]:focus {
-            border-color: #60a5fa; /* blue-400 */
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
-            transform: scale(1.02);
-            outline: none;
-        }
-
-        /* Animacje dla kafelków i banera */
-        .animate-tile {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .animate-tile:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        .animate-banner {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .animate-banner:hover {
-            transform: scale(1.01);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Animacja dla wierszy tabeli */
-        .animate-row {
-            transition: background-color 0.3s ease;
-        }
-        .animate-row:hover {
-            background-color: #3A3A3A;
-        }
-
-        /* Kolorystyka zgodna ze zrzutem ekranu */
-        body {
-            background-color: #1A1A1A; /* Ciemne tło */
-        }
-        .main-container {
-            background-color: #1A1A1A; /* Tło głównego kontenera */
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-        }
-        .section-bg {
-            background-color: #2A2A2A; /* Tło sekcji */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .text-primary {
-            color: #FFFFFF; /* Główny kolor tekstu */
-        }
-        .text-secondary {
-            color: #A0A0A0; /* Kolor tekstu drugorzędnego */
-        }
-        .banner-bg {
-            background: linear-gradient(135deg, #000000 0%, #A6192E 50%, #006633 100%); /* Gradient AGH: czarny, czerwony, zielony */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .button-bg {
-            background-color: #FFFFFF; /* Tło przycisku w banerze */
-            color: #A6192E; /* Kolor tekstu przycisku - czerwony AGH */
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        .button-bg:hover {
-            background-color: #A6192E;
-            color: #FFFFFF;
-        }
-        .table-header-bg {
-            background-color: #3A3A3A; /* Tło nagłówka tabeli */
-        }
-        .table-border {
-            border-color: #4A4A4A; /* Kolor obramowania tabeli */
-        }
-
-        /* Dopasowanie rozmiaru czcionek */
-        h1 {
-            font-size: 1.5rem; /* 24px */
-            font-weight: 600;
-        }
-        h2 {
-            font-size: 1.125rem; /* 18px */
-            font-weight: 500;
-        }
-        p, label, th, td, button {
-            font-size: 0.8125rem; /* 13px */
-            font-weight: 400;
-        }
-        .text-sm {
-            font-size: 0.6875rem; /* 11px */
-        }
-        .text-xl {
-            font-size: 1rem; /* 16px */
-        }
-
-        /* Styl dla ikon */
-        .icon-circle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 50%;
-            transition: background-color 0.3s ease;
-        }
-        .icon-circle:hover {
-            background-color: #4A4A4A;
-        }
-    </style>
+    <link rel="stylesheet" href="Style.css">
 </head>
 <body class="text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
     <div x-data="{
@@ -378,6 +260,42 @@
                 </div>
             </form>
 
+            <!-- Results Section -->
+            <div x-show="activeTab === 'results'" x-transition class="p-6 section-bg rounded-xl mt-4">
+                <h2 class="text-primary mb-4">Wyniki</h2>
+                <div class="section-bg rounded-xl overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="table-header-bg text-secondary text-sm">
+                                <th class="p-3">Data</th>
+                                <th class="p-3">Godzina</th>
+                                <th class="p-3">Wiek</th>
+                                <th class="p-3">Cholesterol</th>
+                                <th class="p-3">Ciśnienie</th>
+                                <th class="p-3">Tętno</th>
+                                <th class="p-3">Ryzyko</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="test in testHistory" :key="test.date + test.time">
+                                <tr class="border-t table-border animate-row">
+                                    <td class="p-3" x-text="test.date"></td>
+                                    <td class="p-3" x-text="test.time"></td>
+                                    <td class="p-3" x-text="test.age"></td>
+                                    <td class="p-3" x-text="test.cholesterol"></td>
+                                    <td class="p-3" x-text="test.blood_pressure"></td>
+                                    <td class="p-3" x-text="test.heart_rate"></td>
+                                    <td class="p-3" x-text="test.risk"></td>
+                                </tr>
+                            </template>
+                            <tr x-if="testHistory.length === 0" class="border-t table-border">
+                                <td colspan="7" class="p-3 text-center text-secondary">Brak wyników w historii.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Extra Section -->
             <div x-show="activeTab === 'extra'" x-transition class="p-6 section-bg rounded-xl mt-4">
                 <h2 class="text-primary mb-4">Dodatkowe informacje</h2>
@@ -390,6 +308,7 @@
             <div class="flex justify-center space-x-6 section-bg p-3 rounded-2xl shadow-lg border border-gray-700">
                 <button @click="activeTab = 'dashboard'" :class="{'bg-blue-700 text-white': activeTab === 'dashboard', 'bg-gray-700 text-gray-300': activeTab !== 'dashboard'}" class="px-8 py-2 rounded-xl transition font-medium">Dashboard</button>
                 <button @click="activeTab = 'assessment'" :class="{'bg-blue-700 text-white': activeTab === 'assessment', 'bg-gray-700 text-gray-300': activeTab !== 'assessment'}" class="px-8 py-2 rounded-xl transition font-medium">Ocena</button>
+                <button @click="activeTab = 'results'" :class="{'bg-blue-700 text-white': activeTab === 'results', 'bg-gray-700 text-gray-300': activeTab !== 'results'}" class="px-8 py-2 rounded-xl transition font-medium">Wyniki</button>
                 <button @click="activeTab = 'extra'" :class="{'bg-blue-700 text-white': activeTab === 'extra', 'bg-gray-700 text-gray-300': activeTab !== 'extra'}" class="px-8 py-2 rounded-xl transition font-medium">Dodatki</button>
             </div>
         </div>

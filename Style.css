@@ -1,0 +1,117 @@
+/* Ustawienie Poppins jako domyślnej czcionki */
+body, html {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Styl dla select i input w stylu iOS - bez strzałek */
+select, input[type="number"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Animacja przy kliknięciu/fokusie */
+select:focus, input[type="number"]:focus {
+    border-color: #60a5fa; /* blue-400 */
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+    transform: scale(1.02);
+    outline: none;
+}
+
+/* Animacje dla kafelków i banera */
+.animate-tile {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.animate-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.animate-banner {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.animate-banner:hover {
+    transform: scale(1.01);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Animacja dla wierszy tabeli */
+.animate-row {
+    transition: background-color 0.3s ease;
+}
+.animate-row:hover {
+    background-color: #3A3A3A;
+}
+
+/* Kolorystyka zgodna ze zrzutem ekranu */
+body {
+    background-color: #1A1A1A; /* Ciemne tło */
+}
+.main-container {
+    background-color: #1A1A1A; /* Tło głównego kontenera */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+.section-bg {
+    background-color: #2A2A2A; /* Tło sekcji */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.text-primary {
+    color: #FFFFFF; /* Główny kolor tekstu */
+}
+.text-secondary {
+    color: #A0A0A0; /* Kolor tekstu drugorzędnego */
+}
+.banner-bg {
+    background: linear-gradient(135deg, #000000 0%, #A6192E 50%, #006633 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.button-bg {
+    background-color: #FFFFFF; /* Tło przycisku w banerze */
+    color: #A6192E; /* Kolor tekstu przycisku - czerwony AGH */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+.button-bg:hover {
+    background-color: #A6192E;
+    color: #FFFFFF;
+}
+.table-header-bg {
+    background-color: #3A3A3A; /* Tło nagłówka tabeli */
+}
+.table-border {
+    border-color: #4A4A4A; /* Kolor obramowania tabeli */
+}
+
+/* Dopasowanie rozmiaru czcionek */
+h1 {
+    font-size: 1.5rem; /* 24px */
+    font-weight: 600;
+}
+h2 {
+    font-size: 1.125rem; /* 18px */
+    font-weight: 500;
+}
+p, label, th, td, button {
+    font-size: 0.8125rem; /* 13px */
+    font-weight: 400;
+}
+.text-sm {
+    font-size: 0.6875rem; /* 11px */
+}
+.text-xl {
+    font-size: 1rem; /* 16px */
+}
+
+/* Styl dla ikon */
+.icon-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+.icon-circle:hover {
+    background-color: #4A4A4A;
+}
