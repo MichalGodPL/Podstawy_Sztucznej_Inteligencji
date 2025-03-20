@@ -1,39 +1,54 @@
 import subprocess
 
+import webview
+
+import threading
+
 import time
 
 
-# Powiadomienie o rozpoczęciu działania SI
+# Function to run scripts
 
-print("Maszyna w Ogniu...")
+def run_scripts():
 
+    print("Maszyna w Ogniu...")
 
-# Rozpoczęcie licznika czasu
-
-start_time = time.time()
-
-
-# Uruchomienie skryptu EdycjaDanych.py
-
-print("Uruchamianie EdycjaDanych.py...")
-
-subprocess.run(["python", "EdycjaDanych.py"], check=True)
+    start_time = time.time()
 
 
-# Uruchomienie skryptu PyTorch.py
+    try:
 
-print("Uruchamianie PyTorch.py...")
+        print("Uruchamianie EdycjaDanych.py...")
 
-subprocess.run(["python", "PyTorch.py"], check=True)
-
-
-# Zakończenie licznika czasu
-
-end_time = time.time()
-
-elapsed_time = end_time - start_time
+        subprocess.run(["python", "EdycjaDanych.py"], check=True)
 
 
-# Wyświetlenie czasu działania
+        print("Uruchamianie PyTorch.py...")
 
-print(f"Maszyna na OIOMie! Całkowity Czas: {elapsed_time:.2f} Sekundy.")
+        subprocess.run(["python", "PyTorch.py"], check=True)
+
+
+    except subprocess.CalledProcessError as e:
+
+        print(f"Błąd w skrypcie: {e}")
+
+
+    end_time = time.time()
+
+    elapsed_time = end_time - start_time
+
+    print(f"Maszyna na OIOMie! Całkowity Czas: {elapsed_time:.2f} Sekundy.")
+
+
+# Uruchamianie skryptów w osobnym wątku, żeby nie blokować WebView
+
+def start_scripts():
+
+    threading.Thread(target=run_scripts, daemon=True).start()
+
+
+# Tworzenie okna WebView
+
+webview.create_window("Status SI", "index.html")  # Możesz użyć lokalnego pliku HTML
+
+webview.start(start_scripts)

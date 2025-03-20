@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Dashboard</title>
+    
+    <!-- Import Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Import Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <!-- Import Poppins font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Import Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Ustawienie Poppins jako domyślnej czcionki */
+        body, html {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Styl dla select i input w stylu iOS - bez strzałek */
+        select, input[type="number"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Animacja przy kliknięciu/fokusie */
+        select:focus, input[type="number"]:focus {
+            border-color: #60a5fa; /* blue-400 */
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+            transform: scale(1.02);
+            outline: none;
+        }
+
+        /* Animacje dla kafelków i banera */
+        .animate-tile {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .animate-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .animate-banner {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .animate-banner:hover {
+            transform: scale(1.01);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Animacja dla wierszy tabeli */
+        .animate-row {
+            transition: background-color 0.3s ease;
+        }
+        .animate-row:hover {
+            background-color: #3A3A3A;
+        }
+
+        /* Kolorystyka zgodna ze zrzutem ekranu */
+        body {
+            background-color: #1A1A1A; /* Ciemne tło */
+        }
+        .main-container {
+            background-color: #1A1A1A; /* Tło głównego kontenera */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+        .section-bg {
+            background-color: #2A2A2A; /* Tło sekcji */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .text-primary {
+            color: #FFFFFF; /* Główny kolor tekstu */
+        }
+        .text-secondary {
+            color: #A0A0A0; /* Kolor tekstu drugorzędnego */
+        }
+        .banner-bg {
+            background: linear-gradient(135deg, #000000 0%, #A6192E 50%, #006633 100%); /* Gradient AGH: czarny, czerwony, zielony */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .button-bg {
+            background-color: #FFFFFF; /* Tło przycisku w banerze */
+            color: #A6192E; /* Kolor tekstu przycisku - czerwony AGH */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .button-bg:hover {
+            background-color: #A6192E;
+            color: #FFFFFF;
+        }
+        .table-header-bg {
+            background-color: #3A3A3A; /* Tło nagłówka tabeli */
+        }
+        .table-border {
+            border-color: #4A4A4A; /* Kolor obramowania tabeli */
+        }
+
+        /* Dopasowanie rozmiaru czcionek */
+        h1 {
+            font-size: 1.5rem; /* 24px */
+            font-weight: 600;
+        }
+        h2 {
+            font-size: 1.125rem; /* 18px */
+            font-weight: 500;
+        }
+        p, label, th, td, button {
+            font-size: 0.8125rem; /* 13px */
+            font-weight: 400;
+        }
+        .text-sm {
+            font-size: 0.6875rem; /* 11px */
+        }
+        .text-xl {
+            font-size: 1rem; /* 16px */
+        }
+
+        /* Styl dla ikon */
+        .icon-circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+        .icon-circle:hover {
+            background-color: #4A4A4A;
+        }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div x-data="{
+        showForm: false,
+        activeTab: 'dashboard',
+        currentDate: new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }),
+        testHistory: [],
+        formData: {
+            age: '',
+            sex: 'Mężczyzna',
+            cholesterol: '',
+            blood_pressure: '',
+            heart_rate: '',
+            diabetes: 'Nie',
+            smoking: 'Nie',
+            exercise: '',
+            diet: 'Zdrowa'
+        },
+        submitForm() {
+            // Symulacja predykcji AI
+            const risk = Math.random() > 0.5 ? 'Wysokie' : 'Niskie';
+            const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' });
+            const time = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+            this.testHistory.push({
+                date: date,
+                time: time,
+                age: this.formData.age,
+                cholesterol: this.formData.cholesterol,
+                blood_pressure: this.formData.blood_pressure,
+                heart_rate: this.formData.heart_rate,
+                risk: risk
+            });
+            this.activeTab = 'dashboard';
+            this.showForm = false;
+            // Reset formularza
+            this.formData = {
+                age: '',
+                sex: 'Mężczyzna',
+                cholesterol: '',
+                blood_pressure: '',
+                heart_rate: '',
+                diabetes: 'Nie',
+                smoking: 'Nie',
+                exercise: '',
+                diet: 'Zdrowa'
+            };
+        }
+    }" class="w-full max-w-4xl main-container rounded-3xl overflow-hidden flex flex-col" style="height: 80vh;">
+        
+        <!-- Zawartość -->
+        <div class="flex-1 overflow-y-auto px-6 mx-4 mb-4">
+            <!-- Dashboard (główna strona) -->
+            <div x-show="activeTab === 'dashboard'" x-transition class="space-y-6 p-4">
+                <!-- Powitanie -->
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-primary">Dzień Dobry!</h1>
+                        <p class="text-sm text-secondary">Jak się czujesz?</p>
+                    </div>
+                    <p class="text-sm text-secondary" x-text="currentDate"></p>
+                </div>
+
+                <!-- Baner reklamowy -->
+                <div class="banner-bg p-4 rounded-xl flex justify-between items-center animate-banner">
+                    <div>
+                        <h2 class="text-white">Projekt powstał we wsparciu</h2>
+                        <p class="text-sm text-gray-200">Akademii Górniczo-Hutniczej</p>
+                        <a href="https://www.agh.edu.pl/" target="_blank" class="mt-2 inline-block px-4 py-2 button-bg font-semibold rounded-full">Dowiedz się więcej</a>
+                    </div>
+                    <!-- Placeholder dla grafiki -->
+                    <div class="w-16 h-16 bg-gray-300 rounded-full"></div>
+                </div>
+
+                <!-- Vitals -->
+                <div>
+                    <h2 class="text-primary mb-2">Parametry życiowe</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="section-bg p-4 rounded-xl animate-tile">
+                            <p class="text-sm text-secondary">Temperatura ciała</p>
+                            <p class="text-xl font-semibold text-primary">36.2 °C</p>
+                        </div>
+                        <div class="section-bg p-4 rounded-xl animate-tile">
+                            <p class="text-sm text-secondary">Puls</p>
+                            <p class="text-xl font-semibold text-primary">85 bpm</p>
+                        </div>
+                        <div class="section-bg p-4 rounded-xl animate-tile">
+                            <p class="text-sm text-secondary">Ciśnienie krwi</p>
+                            <p class="text-xl font-semibold text-primary">80/70 mmHg</p>
+                        </div>
+                        <div class="section-bg p-4 rounded-xl animate-tile">
+                            <p class="text-sm text-secondary">Częstość oddechów</p>
+                            <p class="text-xl font-semibold text-primary">15 oddechów/m</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Przydatne Opcje -->
+                <div>
+                    <h2 class="text-primary mb-2">Przydatne Opcje</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <a href="#" class="section-bg p-4 rounded-xl flex items-center animate-tile">
+                            <div class="icon-circle bg-green-500 mr-4">
+                                <i class="fas fa-file-pdf text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-primary">Zapis danych do PDF</p>
+                            </div>
+                        </a>
+                        <a href="https://www.znanylekarz.pl/szukaj?q=kardiolog&loc=Krak%C3%B3w&filters%5Bspecializations%5D%5B%5D=62" target="_blank" class="section-bg p-4 rounded-xl flex items-center animate-tile">
+                            <div class="icon-circle bg-orange-500 mr-4">
+                                <i class="fas fa-stethoscope text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-primary">Znajdź kardiologa</p>
+                            </div>
+                        </a>
+                        <a href="https://pl.wikipedia.org/wiki/Zawa%C5%82_mi%C4%99%C5%9Bnia_sercowego" target="_blank" class="section-bg p-4 rounded-xl flex items-center animate-tile">
+                            <div class="icon-circle bg-cyan-500 mr-4">
+                                <i class="fas fa-info-circle text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-primary">Zawał mięśnia sercowego</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Historia Testów -->
+                <div>
+                    <h2 class="text-primary mb-2">Historia Testów</h2>
+                    <div class="section-bg rounded-xl overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="table-header-bg text-secondary text-sm">
+                                    <th class="p-3">Data</th>
+                                    <th class="p-3">Godzina</th>
+                                    <th class="p-3">Wiek</th>
+                                    <th class="p-3">Cholesterol</th>
+                                    <th class="p-3">Ciśnienie</th>
+                                    <th class="p-3">Tętno</th>
+                                    <th class="p-3">Ryzyko</th>
+                                    <th class="p-3">Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="test in testHistory" :key="test.date + test.time">
+                                    <tr class="border-t table-border animate-row">
+                                        <td class="p-3" x-text="test.date"></td>
+                                        <td class="p-3" x-text="test.time"></td>
+                                        <td class="p-3" x-text="test.age"></td>
+                                        <td class="p-3" x-text="test.cholesterol"></td>
+                                        <td class="p-3" x-text="test.blood_pressure"></td>
+                                        <td class="p-3" x-text="test.heart_rate"></td>
+                                        <td class="p-3" x-text="test.risk"></td>
+                                        <td class="p-3 flex space-x-2">
+                                            <button class="text-red-500 hover:text-red-400">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <button class="text-blue-500 hover:text-blue-400">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <!-- Domyślny wiersz, gdy historia jest pusta -->
+                                <tr x-if="testHistory.length === 0" class="border-t table-border">
+                                    <td colspan="8" class="p-3 text-center text-secondary">Brak testów w historii.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Form -->
+            <form x-show="activeTab === 'assessment'" x-transition class="space-y-4 p-4" @submit.prevent="submitForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="age" class="block text-sm font-medium text-primary">Wiek</label>
+                        <input type="number" id="age" x-model="formData.age" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj wiek">
+                    </div>
+                    <div>
+                        <label for="sex" class="block text-sm font-medium text-primary">Płeć</label>
+                        <select id="sex" x-model="formData.sex" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
+                            <option>Mężczyzna</option>
+                            <option>Kobieta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="cholesterol" class="block text-sm font-medium text-primary">Poziom cholesterolu (mg/dL)</label>
+                        <input type="number" id="cholesterol" x-model="formData.cholesterol" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj poziom cholesterolu">
+                    </div>
+                    <div>
+                        <label for="blood_pressure" class="block text-sm font-medium text-primary">Ciśnienie krwi (mmHg)</label>
+                        <input type="number" id="blood_pressure" x-model="formData.blood_pressure" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj ciśnienie">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="heart_rate" class="block text-sm font-medium text-primary">Tętno (BPM)</label>
+                        <input type="number" id="heart_rate" x-model="formData.heart_rate" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj tętno">
+                    </div>
+                    <div>
+                        <label for="diabetes" class="block text-sm font-medium text-primary">Cukrzyca</label>
+                        <select id="diabetes" x-model="formData.diabetes" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
+                            <option>Nie</option>
+                            <option>Tak</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="smoking" class="block text-sm font-medium text-primary">Palenie</label>
+                        <select id="smoking" x-model="formData.smoking" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
+                            <option>Nie</option>
+                            <option>Tak</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="exercise" class="block text-sm font-medium text-primary">Godziny ćwiczeń tygodniowo</label>
+                        <input type="number" id="exercise" x-model="formData.exercise" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Godziny tygodniowo">
+                    </div>
+                    <div>
+                        <label for="diet" class="block text-sm font-medium text-primary">Jakość diety</label>
+                        <select id="diet" x-model="formData.diet" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
+                            <option>Zdrowa</option>
+                            <option>Umiarkowana</option>
+                            <option>Słaba</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-6">
+                    <button type="submit" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-xl transition">Zatwierdź</button>
+                </div>
+            </form>
+
+            <!-- Extra Section -->
+            <div x-show="activeTab === 'extra'" x-transition class="p-6 section-bg rounded-xl mt-4">
+                <h2 class="text-primary mb-4">Dodatkowe informacje</h2>
+                <p class="text-secondary">Ta sekcja może być użyta do dalszej analizy i przyszłych funkcji.</p>
+            </div>
+        </div>
+
+        <!-- Osobny div dla zakładek -->
+        <div class="p-4">
+            <div class="flex justify-center space-x-6 section-bg p-3 rounded-2xl shadow-lg border border-gray-700">
+                <button @click="activeTab = 'dashboard'" :class="{'bg-blue-700 text-white': activeTab === 'dashboard', 'bg-gray-700 text-gray-300': activeTab !== 'dashboard'}" class="px-8 py-2 rounded-xl transition font-medium">Dashboard</button>
+                <button @click="activeTab = 'assessment'" :class="{'bg-blue-700 text-white': activeTab === 'assessment', 'bg-gray-700 text-gray-300': activeTab !== 'assessment'}" class="px-8 py-2 rounded-xl transition font-medium">Ocena</button>
+                <button @click="activeTab = 'extra'" :class="{'bg-blue-700 text-white': activeTab === 'extra', 'bg-gray-700 text-gray-300': activeTab !== 'extra'}" class="px-8 py-2 rounded-xl transition font-medium">Dodatki</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
