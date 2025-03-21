@@ -31,10 +31,21 @@
             cholesterol: '',
             blood_pressure: '',
             heart_rate: '',
-            diabetes: 'Nie',
-            smoking: 'Nie',
-            exercise: '',
-            diet: 'Zdrowa'
+            diabetes: false,
+            smoking: false,
+            exercise_hours_per_week: '',
+            diet: 'Zdrowa',
+            obesity: false,
+            alcohol_consumption: false,
+            medication_use: false,
+            stress_level: '',
+            sedentary_hours_per_day: '',
+            income: '',
+            triglycerides: '',
+            physical_activity_days_per_week: false,
+            sleep_hours_per_day: '',
+            continent: 'Europa',
+            hemisphere: 'Północna'
         },
         scrollPositions: {
             dashboard: 0,
@@ -75,10 +86,21 @@
                 cholesterol: '',
                 blood_pressure: '',
                 heart_rate: '',
-                diabetes: 'Nie',
-                smoking: 'Nie',
-                exercise: '',
-                diet: 'Zdrowa'
+                diabetes: false,
+                smoking: false,
+                exercise_hours_per_week: '',
+                diet: 'Zdrowa',
+                obesity: false,
+                alcohol_consumption: false,
+                medication_use: false,
+                stress_level: '',
+                sedentary_hours_per_day: '',
+                income: '',
+                triglycerides: '',
+                physical_activity_days_per_week: false,
+                sleep_hours_per_day: '',
+                continent: 'Europa',
+                hemisphere: 'Północna'
             };
         }
     }" 
@@ -231,6 +253,7 @@
                 <div x-ref="scrollContainer-assessment" 
                      @scroll="saveScrollPosition('assessment')"
                      class="h-full overflow-y-auto no-scrollbar space-y-4 p-4">
+                    <!-- Sekcja 1: Podstawowe dane -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
                             <label for="age" class="block text-sm font-medium text-primary">Wiek</label>
@@ -245,7 +268,8 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <!-- Sekcja 2: Parametry zdrowotne -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div>
                             <label for="cholesterol" class="block text-sm font-medium text-primary">Poziom cholesterolu (mg/dL)</label>
                             <input type="number" id="cholesterol" x-model="formData.cholesterol" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj poziom cholesterolu">
@@ -254,33 +278,70 @@
                             <label for="blood_pressure" class="block text-sm font-medium text-primary">Ciśnienie krwi (mmHg)</label>
                             <input type="number" id="blood_pressure" x-model="formData.blood_pressure" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj ciśnienie">
                         </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div>
                             <label for="heart_rate" class="block text-sm font-medium text-primary">Tętno (BPM)</label>
                             <input type="number" id="heart_rate" x-model="formData.heart_rate" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj tętno">
                         </div>
-                        <div>
+                    </div>
+
+                    <!-- Sekcja 3: Checkboxy (Tak/Nie) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div class="flex items-center space-x-2">
                             <label for="diabetes" class="block text-sm font-medium text-primary">Cukrzyca</label>
-                            <select id="diabetes" x-model="formData.diabetes" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
-                                <option>Nie</option>
-                                <option>Tak</option>
-                            </select>
+                            <input type="checkbox" id="diabetes" x-model="formData.diabetes" class="h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                            <span class="text-sm text-secondary" x-text="formData.diabetes ? 'Tak' : 'Nie'"></span>
                         </div>
-                        <div>
+                        <div class="flex items-center space-x-2">
                             <label for="smoking" class="block text-sm font-medium text-primary">Palenie</label>
-                            <select id="smoking" x-model="formData.smoking" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
-                                <option>Nie</option>
-                                <option>Tak</option>
-                            </select>
+                            <input type="checkbox" id="smoking" x-model="formData.smoking" class="h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                            <span class="text-sm text-secondary" x-text="formData.smoking ? 'Tak' : 'Nie'"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <label for="obesity" class="block text-sm font-medium text-primary">Otyłość</label>
+                            <input type="checkbox" id="obesity" x-model="formData.obesity" class="h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                            <span class="text-sm text-secondary" x-text="formData.obesity ? 'Tak' : 'Nie'"></span>
                         </div>
                     </div>
-                    
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div class="flex items-center space-x-2">
+                            <label for="alcohol_consumption" class="block text-sm font-medium text-primary">Spożycie alkoholu</label>
+                            <input type="checkbox" id="alcohol_consumption" x-model="formData.alcohol_consumption" class="h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                            <span class="text-sm text-secondary" x-text="formData.alcohol_consumption ? 'Tak' : 'Nie'"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <label for="medication_use" class="block text-sm font-medium text-primary">Używanie leków</label>
+                            <input type="checkbox" id="medication_use" x-model="formData.medication_use" class="h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                            <span class="text-sm text-secondary" x-text="formData.medication_use ? 'Tak' : 'Nie'"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <label for="physical_activity_days_per_week" class="block text-sm font-medium text-primary">Aktywność fizyczna (dni w tygodniu)</label>
+                            <input type="checkbox" id="physical_activity_days_per_week" x-model="formData.physical_activity_days_per_week" class="h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                            <span class="text-sm text-secondary" x-text="formData.physical_activity_days_per_week ? 'Tak' : 'Nie'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Sekcja 4: Styl życia -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label for="exercise_hours_per_week" class="block text-sm font-medium text-primary">Godziny ćwiczeń tygodniowo</label>
+                            <input type="number" id="exercise_hours_per_week" x-model="formData.exercise_hours_per_week" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Godziny tygodniowo">
+                        </div>
+                        <div>
+                            <label for="sedentary_hours_per_day" class="block text-sm font-medium text-primary">Godziny siedzące dziennie</label>
+                            <input type="number" id="sedentary_hours_per_day" x-model="formData.sedentary_hours_per_day" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Godziny dziennie">
+                        </div>
+                        <div>
+                            <label for="sleep_hours_per_day" class="block text-sm font-medium text-primary">Godziny snu dziennie</label>
+                            <input type="number" id="sleep_hours_per_day" x-model="formData.sleep_hours_per_day" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Godziny dziennie">
+                        </div>
+                    </div>
+
+                    <!-- Sekcja 5: Poziom stresu i dieta -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
-                            <label for="exercise" class="block text-sm font-medium text-primary">Godziny ćwiczeń tygodniowo</label>
-                            <input type="number" id="exercise" x-model="formData.exercise" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Godziny tygodniowo">
+                            <label for="stress_level" class="block text-sm font-medium text-primary">Poziom stresu (0-9)</label>
+                            <input type="number" id="stress_level" x-model="formData.stress_level" min="0" max="9" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="0-9">
                         </div>
                         <div>
                             <label for="diet" class="block text-sm font-medium text-primary">Jakość diety</label>
@@ -291,7 +352,42 @@
                             </select>
                         </div>
                     </div>
+
+                    <!-- Sekcja 6: Dane finansowe i zdrowotne -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div>
+                            <label for="income" class="block text-sm font-medium text-primary">Dochód (roczny, w PLN)</label>
+                            <input type="number" id="income" x-model="formData.income" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Dochód roczny">
+                        </div>
+                        <div>
+                            <label for="triglycerides" class="block text-sm font-medium text-primary">Poziom trójglicerydów (mg/dL)</label>
+                            <input type="number" id="triglycerides" x-model="formData.triglycerides" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj poziom trójglicerydów">
+                        </div>
+                    </div>
+
+                    <!-- Sekcja 7: Dane geograficzne -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div>
+                            <label for="continent" class="block text-sm font-medium text-primary">Kontynent</label>
+                            <select id="continent" x-model="formData.continent" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
+                                <option>Afryka</option>
+                                <option>Ameryka Północna</option>
+                                <option>Ameryka Południowa</option>
+                                <option>Azja</option>
+                                <option>Australia</option>
+                                <option>Europa</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="hemisphere" class="block text-sm font-medium text-primary">Półkula</label>
+                            <select id="hemisphere" x-model="formData.hemisphere" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
+                                <option>Północna</option>
+                                <option>Południowa</option>
+                            </select>
+                        </div>
+                    </div>
                     
+                    <!-- Przycisk Zatwierdź -->
                     <div class="text-center mt-6">
                         <button type="submit" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-xl transition">Zatwierdź</button>
                     </div>
