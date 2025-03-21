@@ -17,7 +17,15 @@
     <!-- Import Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Twój plik CSS -->
     <link rel="stylesheet" href="Style.css">
+
+    <!-- Skrypt do wykrycia pywebview -->
+    <script>
+        window.addEventListener('pywebviewready', function() {
+            console.log('pywebview gotowe');
+        });
+    </script>
 </head>
 <body class="text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
     <div x-data="{
@@ -66,42 +74,63 @@
             }
         },
         submitForm() {
-            const risk = Math.random() > 0.5 ? 'Wysokie' : 'Niskie';
             const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' });
             const time = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-            this.testHistory.push({
+            
+            // Przygotuj dane do wysłania
+            const dataToSend = {
+                ...this.formData,
                 date: date,
-                time: time,
-                age: this.formData.age,
-                cholesterol: this.formData.cholesterol,
-                blood_pressure: this.formData.blood_pressure,
-                heart_rate: this.formData.heart_rate,
-                risk: risk
-            });
-            this.activeTab = 'dashboard';
-            this.showForm = false;
-            this.formData = {
-                age: '',
-                sex: 'Mężczyzna',
-                cholesterol: '',
-                blood_pressure: '',
-                heart_rate: '',
-                diabetes: false,
-                smoking: false,
-                exercise_hours_per_week: '',
-                diet: 'Zdrowa',
-                obesity: false,
-                alcohol_consumption: false,
-                medication_use: false,
-                stress_level: '',
-                sedentary_hours_per_day: '',
-                income: '',
-                triglycerides: '',
-                physical_activity_days_per_week: false,
-                sleep_hours_per_day: '',
-                continent: 'Europa',
-                hemisphere: 'Północna'
+                time: time
             };
+
+            // Wywołaj funkcję Pythona przez pywebview
+            window.pywebview.api.predict(dataToSend)
+                .then(data => {
+                    if (data.error) {
+                        alert('Wystąpił błąd: ' + data.error);
+                        return;
+                    }
+                    // Dodaj wynik do historii
+                    this.testHistory.push({
+                        date: data.date,
+                        time: data.time,
+                        age: data.age,
+                        cholesterol: data.cholesterol,
+                        blood_pressure: data.blood_pressure,
+                        heart_rate: data.heart_rate,
+                        risk: data.risk
+                    });
+                    this.activeTab = 'results'; // Przejdź do zakładki Wyniki
+                    this.showForm = false;
+                    // Resetuj formularz
+                    this.formData = {
+                        age: '',
+                        sex: 'Mężczyzna',
+                        cholesterol: '',
+                        blood_pressure: '',
+                        heart_rate: '',
+                        diabetes: false,
+                        smoking: false,
+                        exercise_hours_per_week: '',
+                        diet: 'Zdrowa',
+                        obesity: false,
+                        alcohol_consumption: false,
+                        medication_use: false,
+                        stress_level: '',
+                        sedentary_hours_per_day: '',
+                        income: '',
+                        triglycerides: '',
+                        physical_activity_days_per_week: false,
+                        sleep_hours_per_day: '',
+                        continent: 'Europa',
+                        hemisphere: 'Północna'
+                    };
+                })
+                .catch(error => {
+                    console.error('Błąd:', error);
+                    alert('Wystąpił problem z predykcją.');
+                });
         }
     }" 
     x-init="restoreScrollPosition('dashboard')"
@@ -249,7 +278,7 @@
                   x-transition:leave-end="translate-x-10 opacity-0"
                   @after-enter="restoreScrollPosition('assessment')"
                   @before-leave="saveScrollPosition('assessment')"
-                  class="absolute inset-0" @submit.prevent="submitForm">
+                  class="absolute inset-0" x-on:submit.prevent="submitForm">
                 <div x-ref="scrollContainer-assessment" 
                      @scroll="saveScrollPosition('assessment')"
                      class="h-full overflow-y-auto no-scrollbar space-y-4 p-4">
