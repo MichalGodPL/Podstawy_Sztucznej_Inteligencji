@@ -2,13 +2,15 @@ import webview
 import threading
 import torch
 import numpy as np
+import pickle
+import importlib
 from Analiza import ImprovedHeartDiseaseModel, scaler, model  # Import modelu i skalera
 
 # Klasa API do komunikacji z JavaScript
 class Api:
     def predict(self, data):
         try:
-            # Przetwarzanie danych z formularza HTML
+            # Przetwarzanie danych z formularza HTML (18 cech)
             features = [
                 float(data['age']),
                 1 if data['sex'] == 'Mężczyzna' else 0,
@@ -24,12 +26,10 @@ class Api:
                 1 if data['medication_use'] else 0,
                 float(data['stress_level']),
                 float(data['sedentary_hours_per_day']),
-                float(data['income']),
                 float(data['triglycerides']),
                 1 if data['physical_activity_days_per_week'] else 0,
                 float(data['sleep_hours_per_day']),
-                {'Afryka': 0, 'Ameryka Północna': 1, 'Ameryka Południowa': 2, 'Azja': 3, 'Australia': 4, 'Europa': 5}[data['continent']],
-                0 if data['hemisphere'] == 'Północna' else 1
+                {'Afryka': 0, 'Ameryka Północna': 1, 'Ameryka Południowa': 2, 'Azja': 3, 'Australia': 4, 'Europa': 5}[data['continent']]
             ]
 
             # Standaryzacja danych
@@ -44,7 +44,19 @@ class Api:
                 risk_prob = torch.sigmoid(prediction).item()
                 risk = 'Wysokie' if risk_prob > 0.5 else 'Niskie'
 
-            # Zwróć wyniki do HTML
+            # Wczytaj metryki modelu
+            try:
+                with open('metrics.pkl', 'rb') as f:
+                    metrics = pickle.load(f)
+            except FileNotFoundError:
+                metrics = {
+                    'accuracy': 'N/A',
+                    'precision': 'N/A',
+                    'recall': 'N/A',
+                    'f1_score': 'N/A'
+                }
+
+            # Zwróć wyniki i metryki do HTML
             return {
                 'date': data['date'],
                 'time': data['time'],
@@ -52,16 +64,29 @@ class Api:
                 'cholesterol': data['cholesterol'],
                 'blood_pressure': data['blood_pressure'],
                 'heart_rate': data['heart_rate'],
-                'risk': risk
+                'risk': risk,
+                'metrics': metrics
             }
         except Exception as e:
             return {'error': str(e)}
 
-# Funkcja startowa (opcjonalnie możesz dodać inne skrypty)
+# Funkcja do uruchamiania skryptu w wątku
+def run_script(script_name):
+    try:
+        # Dynamiczne załadowanie modułu
+        module = importlib.import_module(script_name)
+        # Kod modułu zostanie wykonany automatycznie po zaimportowaniu
+        print(f"Uruchomiono {script_name} w wątku.")
+    except Exception as e:
+        print(f"Błąd podczas uruchamiania {script_name}: {e}")
+
+# Funkcja startowa
 def start_scripts():
     print("Aplikacja uruchomiona.")
-    # Jeśli masz inne skrypty do uruchomienia, dodaj je tutaj, np.:
-    # threading.Thread(target=run_some_script, daemon=True).start()
+    # Uruchamianie EdycjaDanych.py w osobnym wątku
+    threading.Thread(target=run_script, args=('EdycjaDanych',), daemon=True).start()
+    # Uruchamianie PyTorch.py w osobnym wątku
+    threading.Thread(target=run_script, args=('PyTorch',), daemon=True).start()
 
 # Tworzenie okna WebView
 api = Api()

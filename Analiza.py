@@ -4,7 +4,7 @@ import pickle
 
 # Definicja modelu
 class ImprovedHeartDiseaseModel(nn.Module):
-    def __init__(self, input_dim):
+    def __init__(self, input_dim=18):  # Zmiana na 18 cech
         super(ImprovedHeartDiseaseModel, self).__init__()
         self.fc1 = nn.Linear(input_dim, 256)
         self.bn1 = nn.BatchNorm1d(256)
@@ -36,7 +36,7 @@ class ImprovedHeartDiseaseModel(nn.Module):
         return self.output(x)
 
 # Ładowanie modelu i skalera
-input_dim = 20  # Liczba cech zgodna z Twoim modelem
+input_dim = 18  # Ustawiamy na 18, aby pasowało do zapisanego modelu
 model = ImprovedHeartDiseaseModel(input_dim=input_dim)
 model.load_state_dict(torch.load('heart_disease_model.pth'))
 model.eval()

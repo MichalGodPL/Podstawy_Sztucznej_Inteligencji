@@ -33,6 +33,12 @@
         activeTab: 'dashboard',
         currentDate: new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }),
         testHistory: [],
+        modelMetrics: {
+            accuracy: 'N/A',
+            precision: 'N/A',
+            recall: 'N/A',
+            f1_score: 'N/A'
+        },
         formData: {
             age: '',
             sex: 'Mężczyzna',
@@ -48,12 +54,10 @@
             medication_use: false,
             stress_level: '',
             sedentary_hours_per_day: '',
-            income: '',
             triglycerides: '',
             physical_activity_days_per_week: false,
             sleep_hours_per_day: '',
-            continent: 'Europa',
-            hemisphere: 'Północna'
+            continent: 'Europa'
         },
         scrollPositions: {
             dashboard: 0,
@@ -101,6 +105,13 @@
                         heart_rate: data.heart_rate,
                         risk: data.risk
                     });
+                    // Zaktualizuj metryki modelu
+                    this.modelMetrics = {
+                        accuracy: data.metrics?.accuracy || 'N/A',
+                        precision: data.metrics?.precision || 'N/A',
+                        recall: data.metrics?.recall || 'N/A',
+                        f1_score: data.metrics?.f1_score || 'N/A'
+                    };
                     this.activeTab = 'results'; // Przejdź do zakładki Wyniki
                     this.showForm = false;
                     // Resetuj formularz
@@ -119,12 +130,10 @@
                         medication_use: false,
                         stress_level: '',
                         sedentary_hours_per_day: '',
-                        income: '',
                         triglycerides: '',
                         physical_activity_days_per_week: false,
                         sleep_hours_per_day: '',
-                        continent: 'Europa',
-                        hemisphere: 'Północna'
+                        continent: 'Europa'
                     };
                 })
                 .catch(error => {
@@ -412,20 +421,12 @@
                         </div>
                     </div>
 
-                    <!-- Sekcja 6: Dane finansowe i zdrowotne -->
+                    <!-- Sekcja 6: Dane zdrowotne i geograficzne -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div>
-                            <label for="income" class="block text-[0.75rem] font-medium text-primary mb-1">Dochód (roczny, w PLN)</label>
-                            <input type="number" id="income" x-model="formData.income" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Dochód roczny">
-                        </div>
                         <div>
                             <label for="triglycerides" class="block text-[0.75rem] font-medium text-primary mb-1">Poziom trójglicerydów (mg/dL)</label>
                             <input type="number" id="triglycerides" x-model="formData.triglycerides" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj poziom trójglicerydów">
                         </div>
-                    </div>
-
-                    <!-- Sekcja 7: Dane geograficzne -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
                             <label for="continent" class="block text-[0.75rem] font-medium text-primary mb-1">Kontynent</label>
                             <select id="continent" x-model="formData.continent" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
@@ -435,13 +436,6 @@
                                 <option>Azja</option>
                                 <option>Australia</option>
                                 <option>Europa</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="hemisphere" class="block text-[0.75rem] font-medium text-primary mb-1">Półkula</label>
-                            <select id="hemisphere" x-model="formData.hemisphere" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
-                                <option>Północna</option>
-                                <option>Południowa</option>
                             </select>
                         </div>
                     </div>
@@ -468,6 +462,28 @@
                      @scroll="saveScrollPosition('results')"
                      class="h-full overflow-y-auto no-scrollbar space-y-6 p-4">
                     <h2 class="text-primary mb-4 text-lg">Wyniki</h2>
+                    
+                    <!-- Kafelki z metrykami modelu -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="section-bg p-4 rounded-xl animate-tile">
+                            <p class="text-sm text-secondary">Dokładność</p>
+                            <p class="text-xl font-semibold text-primary" x-text="modelMetrics.accuracy"></p>
+                        </div>
+                        <div class="section-bg p-4 rounded-xl animate-tile">
+                            <p class="text-sm text-secondary">Precyzja</p>
+                            <p class="text-xl font-semibold text-primary" x-text="modelMetrics.precision"></p>
+                        </div>
+                        <div class="section-bg p-4 rounded-xl animate-tile">
+                            <p class="text-sm text-secondary">Czułość</p>
+                            <p class="text-xl font-semibold text-primary" x-text="modelMetrics.recall"></p>
+                        </div>
+                        <div class="section-bg p-4 rounded-xl animate-tile">
+                            <p class="text-sm text-secondary">F1-Score</p>
+                            <p class="text-xl font-semibold text-primary" x-text="modelMetrics.f1_score"></p>
+                        </div>
+                    </div>
+
+                    <!-- Tabela z wynikami -->
                     <div class="section-bg rounded-xl overflow-hidden">
                         <table class="w-full text-left">
                             <thead>
