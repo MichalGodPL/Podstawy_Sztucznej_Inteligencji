@@ -44,6 +44,15 @@ select:focus, input[type="number"]:focus {
     background-color: #3A3A3A;
 }
 
+/* Ukrycie scrollbar'a */
+.no-scrollbar::-webkit-scrollbar {
+    display: none; /* Ukrycie scrollbar'a w Chrome, Safari */
+}
+.no-scrollbar {
+    -ms-overflow-style: none; /* Ukrycie scrollbar'a w IE i Edge */
+    scrollbar-width: none; /* Ukrycie scrollbar'a w Firefox */
+}
+
 /* Kolorystyka zgodna ze zrzutem ekranu */
 body {
     background-color: #1A1A1A; /* Ciemne tło strony */
