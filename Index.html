@@ -22,7 +22,7 @@
 <body class="text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
     <div x-data="{
         showForm: false,
-        activeTab: 'dashboard', // Zmiana na 'dashboard' jako domyślna zakładka
+        activeTab: 'dashboard',
         currentDate: new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }),
         testHistory: [],
         formData: {
@@ -256,11 +256,11 @@
                     <!-- Sekcja 1: Podstawowe dane -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
-                            <label for="age" class="block text-sm font-medium text-primary">Wiek</label>
+                            <label for="age" class="block text-[0.75rem] font-medium text-primary mb-1">Wiek</label>
                             <input type="number" id="age" x-model="formData.age" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj wiek">
                         </div>
                         <div>
-                            <label for="sex" class="block text-sm font-medium text-primary">Płeć</label>
+                            <label for="sex" class="block text-[0.75rem] font-medium text-primary mb-1">Płeć</label>
                             <select id="sex" x-model="formData.sex" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
                                 <option>Mężczyzna</option>
                                 <option>Kobieta</option>
@@ -271,15 +271,15 @@
                     <!-- Sekcja 2: Parametry zdrowotne -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div>
-                            <label for="cholesterol" class="block text-sm font-medium text-primary">Poziom cholesterolu (mg/dL)</label>
+                            <label for="cholesterol" class="block text-[0.75rem] font-medium text-primary mb-1">Poziom cholesterolu (mg/dL)</label>
                             <input type="number" id="cholesterol" x-model="formData.cholesterol" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj poziom cholesterolu">
                         </div>
                         <div>
-                            <label for="blood_pressure" class="block text-sm font-medium text-primary">Ciśnienie krwi (mmHg)</label>
+                            <label for="blood_pressure" class="block text-[0.75rem] font-medium text-primary mb-1">Ciśnienie krwi (mmHg)</label>
                             <input type="number" id="blood_pressure" x-model="formData.blood_pressure" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj ciśnienie">
                         </div>
                         <div>
-                            <label for="heart_rate" class="block text-sm font-medium text-primary">Tętno (BPM)</label>
+                            <label for="heart_rate" class="block text-[0.75rem] font-medium text-primary mb-1">Tętno (BPM)</label>
                             <input type="number" id="heart_rate" x-model="formData.heart_rate" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj tętno">
                         </div>
                     </div>
@@ -287,7 +287,7 @@
                     <!-- Sekcja 3: Checkboxy (Tak/Nie) -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div class="flex items-center space-x-2">
-                            <label for="diabetes" class="block text-sm font-medium text-primary">Cukrzyca</label>
+                            <label for="diabetes" class="block text-[0.75rem] font-medium text-primary mb-1">Cukrzyca</label>
                             <div class="relative">
                                 <input type="checkbox" id="diabetes" x-model="formData.diabetes" class="opacity-0 absolute h-6 w-6">
                                 <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.diabetes ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
@@ -297,7 +297,7 @@
                             <span class="text-sm text-secondary" x-text="formData.diabetes ? 'Tak' : 'Nie'"></span>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <label for="smoking" class="block text-sm font-medium text-primary">Palenie</label>
+                            <label for="smoking" class="block text-[0.75rem] font-medium text-primary mb-1">Palenie</label>
                             <div class="relative">
                                 <input type="checkbox" id="smoking" x-model="formData.smoking" class="opacity-0 absolute h-6 w-6">
                                 <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.smoking ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
@@ -307,7 +307,7 @@
                             <span class="text-sm text-secondary" x-text="formData.smoking ? 'Tak' : 'Nie'"></span>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <label for="obesity" class="block text-sm font-medium text-primary">Otyłość</label>
+                            <label for="obesity" class="block text-[0.75rem] font-medium text-primary mb-1">Otyłość</label>
                             <div class="relative">
                                 <input type="checkbox" id="obesity" x-model="formData.obesity" class="opacity-0 absolute h-6 w-6">
                                 <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.obesity ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
@@ -320,7 +320,7 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div class="flex items-center space-x-2">
-                            <label for="alcohol_consumption" class="block text-sm font-medium text-primary">Spożycie alkoholu</label>
+                            <label for="alcohol_consumption" class="block text-[0.75rem] font-medium text-primary mb-1">Spożycie alkoholu</label>
                             <div class="relative">
                                 <input type="checkbox" id="alcohol_consumption" x-model="formData.alcohol_consumption" class="opacity-0 absolute h-6 w-6">
                                 <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.alcohol_consumption ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
@@ -330,7 +330,7 @@
                             <span class="text-sm text-secondary" x-text="formData.alcohol_consumption ? 'Tak' : 'Nie'"></span>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <label for="medication_use" class="block text-sm font-medium text-primary">Używanie leków</label>
+                            <label for="medication_use" class="block text-[0.75rem] font-medium text-primary mb-1">Używanie leków</label>
                             <div class="relative">
                                 <input type="checkbox" id="medication_use" x-model="formData.medication_use" class="opacity-0 absolute h-6 w-6">
                                 <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.medication_use ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
@@ -340,7 +340,7 @@
                             <span class="text-sm text-secondary" x-text="formData.medication_use ? 'Tak' : 'Nie'"></span>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <label for="physical_activity_days_per_week" class="block text-sm font-medium text-primary">Aktywność fizyczna (dni w tygodniu)</label>
+                            <label for="physical_activity_days_per_week" class="block text-[0.75rem] font-medium text-primary mb-1">Aktywność fizyczna (dni w tygodniu)</label>
                             <div class="relative">
                                 <input type="checkbox" id="physical_activity_days_per_week" x-model="formData.physical_activity_days_per_week" class="opacity-0 absolute h-6 w-6">
                                 <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.physical_activity_days_per_week ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
@@ -354,15 +354,15 @@
                     <!-- Sekcja 4: Styl życia -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div>
-                            <label for="exercise_hours_per_week" class="block text-sm font-medium text-primary">Godziny ćwiczeń tygodniowo</label>
+                            <label for="exercise_hours_per_week" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny ćwiczeń tygodniowo</label>
                             <input type="number" id="exercise_hours_per_week" x-model="formData.exercise_hours_per_week" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny tygodniowo">
                         </div>
                         <div>
-                            <label for="sedentary_hours_per_day" class="block text-sm font-medium text-primary">Godziny siedzące dziennie</label>
+                            <label for="sedentary_hours_per_day" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny siedzące dziennie</label>
                             <input type="number" id="sedentary_hours_per_day" x-model="formData.sedentary_hours_per_day" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny dziennie">
                         </div>
                         <div>
-                            <label for="sleep_hours_per_day" class="block text-sm font-medium text-primary">Godziny snu dziennie</label>
+                            <label for="sleep_hours_per_day" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny snu dziennie</label>
                             <input type="number" id="sleep_hours_per_day" x-model="formData.sleep_hours_per_day" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny dziennie">
                         </div>
                     </div>
@@ -370,11 +370,11 @@
                     <!-- Sekcja 5: Poziom stresu i dieta -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
-                            <label for="stress_level" class="block text-sm font-medium text-primary">Poziom stresu (0-9)</label>
+                            <label for="stress_level" class="block text-[0.75rem] font-medium text-primary mb-1">Poziom stresu (0-9)</label>
                             <input type="number" id="stress_level" x-model="formData.stress_level" min="0" max="9" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="0-9">
                         </div>
                         <div>
-                            <label for="diet" class="block text-sm font-medium text-primary">Jakość diety</label>
+                            <label for="diet" class="block text-[0.75rem] font-medium text-primary mb-1">Jakość diety</label>
                             <select id="diet" x-model="formData.diet" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
                                 <option>Zdrowa</option>
                                 <option>Umiarkowana</option>
@@ -386,11 +386,11 @@
                     <!-- Sekcja 6: Dane finansowe i zdrowotne -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
-                            <label for="income" class="block text-sm font-medium text-primary">Dochód (roczny, w PLN)</label>
+                            <label for="income" class="block text-[0.75rem] font-medium text-primary mb-1">Dochód (roczny, w PLN)</label>
                             <input type="number" id="income" x-model="formData.income" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Dochód roczny">
                         </div>
                         <div>
-                            <label for="triglycerides" class="block text-sm font-medium text-primary">Poziom trójglicerydów (mg/dL)</label>
+                            <label for="triglycerides" class="block text-[0.75rem] font-medium text-primary mb-1">Poziom trójglicerydów (mg/dL)</label>
                             <input type="number" id="triglycerides" x-model="formData.triglycerides" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj poziom trójglicerydów">
                         </div>
                     </div>
@@ -398,7 +398,7 @@
                     <!-- Sekcja 7: Dane geograficzne -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
-                            <label for="continent" class="block text-sm font-medium text-primary">Kontynent</label>
+                            <label for="continent" class="block text-[0.75rem] font-medium text-primary mb-1">Kontynent</label>
                             <select id="continent" x-model="formData.continent" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
                                 <option>Afryka</option>
                                 <option>Ameryka Północna</option>
@@ -409,7 +409,7 @@
                             </select>
                         </div>
                         <div>
-                            <label for="hemisphere" class="block text-sm font-medium text-primary">Półkula</label>
+                            <label for="hemisphere" class="block text-[0.75rem] font-medium text-primary mb-1">Półkula</label>
                             <select id="hemisphere" x-model="formData.hemisphere" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
                                 <option>Północna</option>
                                 <option>Południowa</option>
