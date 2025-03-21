@@ -3,11 +3,14 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import pickle
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import resample
 from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, precision_score, f1_score
 from torch.utils.data import DataLoader, TensorDataset
+
+
 
 # Wczytywanie danych
 data = pd.read_csv('DanePrzeczyszczone.csv')
@@ -139,3 +142,10 @@ f1 = f1_score(y_test_tensor, y_test_pred)
 print(f'Accuracy: {accuracy:.4f}')
 print(f'Confusion Matrix:\n{conf_matrix}')
 print(f'Recall: {recall:.4f}, Precision: {precision:.4f}, F1-score: {f1:.4f}')
+
+# Zapis modelu i scaler'a lokalnie
+torch.save(model.state_dict(), 'heart_disease_model.pth')
+with open('scaler.pkl', 'wb') as f:
+    pickle.dump(scaler, f)
+
+print("Model i scaler zostały zapisane lokalnie jako 'heart_disease_model.pth' i 'scaler.pkl'.")
