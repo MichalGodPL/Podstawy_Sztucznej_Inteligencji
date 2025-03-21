@@ -46,29 +46,30 @@ select:focus, input[type="number"]:focus {
 
 /* Kolorystyka zgodna ze zrzutem ekranu */
 body {
-    background-color: #1A1A1A; /* Ciemne tło */
+    background-color: #1A1A1A; /* Ciemne tło strony */
 }
 .main-container {
-    background-color: #1A1A1A; /* Tło głównego kontenera */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    background-color: transparent; /* Usunięcie tła */
+    box-shadow: none; /* Usunięcie cienia */
+    border: none; /* Usunięcie obramowania */
 }
 .section-bg {
     background-color: #2A2A2A; /* Tło sekcji */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 .text-primary {
-    color: #FFFFFF; /* Główny kolor tekstu */
+    color: #FFFFFF;
 }
 .text-secondary {
-    color: #A0A0A0; /* Kolor tekstu drugorzędnego */
+    color: #A0A0A0;
 }
 .banner-bg {
     background: linear-gradient(135deg, #000000 0%, #A6192E 50%, #006633 100%);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 .button-bg {
-    background-color: #FFFFFF; /* Tło przycisku w banerze */
-    color: #A6192E; /* Kolor tekstu przycisku - czerwony AGH */
+    background-color: #FFFFFF;
+    color: #A6192E;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 .button-bg:hover {
@@ -76,30 +77,30 @@ body {
     color: #FFFFFF;
 }
 .table-header-bg {
-    background-color: #3A3A3A; /* Tło nagłówka tabeli */
+    background-color: #3A3A3A;
 }
 .table-border {
-    border-color: #4A4A4A; /* Kolor obramowania tabeli */
+    border-color: #4A4A4A;
 }
 
 /* Dopasowanie rozmiaru czcionek */
 h1 {
-    font-size: 1.5rem; /* 24px */
+    font-size: 1.5rem;
     font-weight: 600;
 }
 h2 {
-    font-size: 1.125rem; /* 18px */
+    font-size: 1.125rem;
     font-weight: 500;
 }
 p, label, th, td, button {
-    font-size: 0.8125rem; /* 13px */
+    font-size: 0.8125rem;
     font-weight: 400;
 }
 .text-sm {
-    font-size: 0.6875rem; /* 11px */
+    font-size: 0.6875rem;
 }
 .text-xl {
-    font-size: 1rem; /* 16px */
+    font-size: 1rem;
 }
 
 /* Styl dla ikon */
@@ -114,4 +115,26 @@ p, label, th, td, button {
 }
 .icon-circle:hover {
     background-color: #4A4A4A;
+}
+
+/* Media query dla rozdzielczości 1600px */
+@media (min-width: 1600px) {
+    .main-container {
+        max-width: 1536px; /* max-w-5xl */
+    }
+    h1 {
+        font-size: 1.75rem;
+    }
+    h2 {
+        font-size: 1.25rem;
+    }
+    p, label, th, td, button {
+        font-size: 0.875rem;
+    }
+    .text-sm {
+        font-size: 0.75rem;
+    }
+    .text-xl {
+        font-size: 1.125rem;
+    }
 }

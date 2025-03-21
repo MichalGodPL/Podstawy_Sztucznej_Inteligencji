@@ -47,8 +47,8 @@ def start_scripts():
     threading.Thread(target=run_scripts, daemon=True).start()
 
 
-# Tworzenie okna WebView
+# Tworzenie okna WebView w rozdzielczości 1600x900
 
-webview.create_window("Status SI", "index.html")  # Możesz użyć lokalnego pliku HTML
+webview.create_window("Status SI", "index.html", width=1600, height=900)
 
 webview.start(start_scripts)

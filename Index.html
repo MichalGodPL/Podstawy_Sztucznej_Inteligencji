@@ -37,7 +37,6 @@
             diet: 'Zdrowa'
         },
         submitForm() {
-            // Symulacja predykcji AI
             const risk = Math.random() > 0.5 ? 'Wysokie' : 'Niskie';
             const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' });
             const time = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
@@ -52,7 +51,6 @@
             });
             this.activeTab = 'dashboard';
             this.showForm = false;
-            // Reset formularza
             this.formData = {
                 age: '',
                 sex: 'Mężczyzna',
@@ -65,36 +63,32 @@
                 diet: 'Zdrowa'
             };
         }
-    }" class="w-full max-w-4xl main-container rounded-3xl overflow-hidden flex flex-col" style="height: 80vh;">
+    }" class="w-full max-w-5xl main-container rounded-3xl overflow-hidden flex flex-col" style="height: 80vh;">
         
         <!-- Zawartość -->
         <div class="flex-1 overflow-y-auto px-6 mx-4 mb-4">
-            <!-- Dashboard (główna strona) -->
+            <!-- Dashboard -->
             <div x-show="activeTab === 'dashboard'" x-transition class="space-y-6 p-4">
-                <!-- Powitanie -->
                 <div class="flex justify-between items-center">
                     <div>
-                        <h1 class="text-primary">Dzień Dobry!</h1>
+                        <h1 class="text-primary text-2xl">Dzień Dobry!</h1>
                         <p class="text-sm text-secondary">Jak się czujesz?</p>
                     </div>
                     <p class="text-sm text-secondary" x-text="currentDate"></p>
                 </div>
 
-                <!-- Baner reklamowy -->
                 <div class="banner-bg p-4 rounded-xl flex justify-between items-center animate-banner">
                     <div>
-                        <h2 class="text-white">Projekt powstał we wsparciu</h2>
+                        <h2 class="text-white text-lg">Projekt powstał we wsparciu</h2>
                         <p class="text-sm text-gray-200">Akademii Górniczo-Hutniczej</p>
                         <a href="https://www.agh.edu.pl/" target="_blank" class="mt-2 inline-block px-4 py-2 button-bg font-semibold rounded-full">Dowiedz się więcej</a>
                     </div>
-                    <!-- Placeholder dla grafiki -->
                     <div class="w-16 h-16 bg-gray-300 rounded-full"></div>
                 </div>
 
-                <!-- Vitals -->
                 <div>
-                    <h2 class="text-primary mb-2">Parametry życiowe</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <h2 class="text-primary mb-2 text-lg">Parametry życiowe</h2>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="section-bg p-4 rounded-xl animate-tile">
                             <p class="text-sm text-secondary">Temperatura ciała</p>
                             <p class="text-xl font-semibold text-primary">36.2 °C</p>
@@ -114,10 +108,9 @@
                     </div>
                 </div>
 
-                <!-- Przydatne Opcje -->
                 <div>
-                    <h2 class="text-primary mb-2">Przydatne Opcje</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <h2 class="text-primary mb-2 text-lg">Przydatne Opcje</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <a href="#" class="section-bg p-4 rounded-xl flex items-center animate-tile">
                             <div class="icon-circle bg-green-500 mr-4">
                                 <i class="fas fa-file-pdf text-white text-lg"></i>
@@ -144,57 +137,11 @@
                         </a>
                     </div>
                 </div>
-
-                <!-- Historia Testów -->
-                <div>
-                    <h2 class="text-primary mb-2">Historia Testów</h2>
-                    <div class="section-bg rounded-xl overflow-hidden">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="table-header-bg text-secondary text-sm">
-                                    <th class="p-3">Data</th>
-                                    <th class="p-3">Godzina</th>
-                                    <th class="p-3">Wiek</th>
-                                    <th class="p-3">Cholesterol</th>
-                                    <th class="p-3">Ciśnienie</th>
-                                    <th class="p-3">Tętno</th>
-                                    <th class="p-3">Ryzyko</th>
-                                    <th class="p-3">Akcje</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template x-for="test in testHistory" :key="test.date + test.time">
-                                    <tr class="border-t table-border animate-row">
-                                        <td class="p-3" x-text="test.date"></td>
-                                        <td class="p-3" x-text="test.time"></td>
-                                        <td class="p-3" x-text="test.age"></td>
-                                        <td class="p-3" x-text="test.cholesterol"></td>
-                                        <td class="p-3" x-text="test.blood_pressure"></td>
-                                        <td class="p-3" x-text="test.heart_rate"></td>
-                                        <td class="p-3" x-text="test.risk"></td>
-                                        <td class="p-3 flex space-x-2">
-                                            <button class="text-red-500 hover:text-red-400">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                            <button class="text-blue-500 hover:text-blue-400">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </template>
-                                <!-- Domyślny wiersz, gdy historia jest pusta -->
-                                <tr x-if="testHistory.length === 0" class="border-t table-border">
-                                    <td colspan="8" class="p-3 text-center text-secondary">Brak testów w historii.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
 
-            <!-- Assessment Form -->
+            <!-- Formularz -->
             <form x-show="activeTab === 'assessment'" x-transition class="space-y-4 p-4" @submit.prevent="submitForm">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
                         <label for="age" class="block text-sm font-medium text-primary">Wiek</label>
                         <input type="number" id="age" x-model="formData.age" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj wiek">
@@ -208,7 +155,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
                         <label for="cholesterol" class="block text-sm font-medium text-primary">Poziom cholesterolu (mg/dL)</label>
                         <input type="number" id="cholesterol" x-model="formData.cholesterol" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj poziom cholesterolu">
@@ -219,7 +166,7 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <div>
                         <label for="heart_rate" class="block text-sm font-medium text-primary">Tętno (BPM)</label>
                         <input type="number" id="heart_rate" x-model="formData.heart_rate" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Podaj tętno">
@@ -240,7 +187,7 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
                         <label for="exercise" class="block text-sm font-medium text-primary">Godziny ćwiczeń tygodniowo</label>
                         <input type="number" id="exercise" x-model="formData.exercise" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500" placeholder="Godziny tygodniowo">
@@ -260,9 +207,9 @@
                 </div>
             </form>
 
-            <!-- Results Section -->
+            <!-- Wyniki -->
             <div x-show="activeTab === 'results'" x-transition class="p-6 section-bg rounded-xl mt-4">
-                <h2 class="text-primary mb-4">Wyniki</h2>
+                <h2 class="text-primary mb-4 text-lg">Wyniki</h2>
                 <div class="section-bg rounded-xl overflow-hidden">
                     <table class="w-full text-left">
                         <thead>
@@ -296,14 +243,14 @@
                 </div>
             </div>
 
-            <!-- Extra Section -->
+            <!-- Dodatki -->
             <div x-show="activeTab === 'extra'" x-transition class="p-6 section-bg rounded-xl mt-4">
-                <h2 class="text-primary mb-4">Dodatkowe informacje</h2>
+                <h2 class="text-primary mb-4 text-lg">Dodatkowe informacje</h2>
                 <p class="text-secondary">Ta sekcja może być użyta do dalszej analizy i przyszłych funkcji.</p>
             </div>
         </div>
 
-        <!-- Osobny div dla zakładek -->
+        <!-- Zakładki -->
         <div class="p-4">
             <div class="flex justify-center space-x-6 section-bg p-3 rounded-2xl shadow-lg border border-gray-700">
                 <button @click="activeTab = 'dashboard'" :class="{'bg-blue-700 text-white': activeTab === 'dashboard', 'bg-gray-700 text-gray-300': activeTab !== 'dashboard'}" class="px-8 py-2 rounded-xl transition font-medium">Dashboard</button>
