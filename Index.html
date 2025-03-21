@@ -445,11 +445,33 @@
                         </div>
                         <div>
                             <label for="sedentary_hours_per_day" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny siedzące dziennie</label>
-                            <input type="number" id="sedentary_hours_per_day" x-model="formData.sedentary_hours_per_day" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny dziennie" required>
+                            <input 
+                                type="number" 
+                                id="sedentary_hours_per_day" 
+                                x-model="formData.sedentary_hours_per_day" 
+                                min="0" 
+                                max="24" 
+                                maxlength="2" 
+                                class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" 
+                                placeholder="Godziny dziennie" 
+                                required
+                                @input="if ($event.target.value > 24) $event.target.value = 24; if ($event.target.value < 0) $event.target.value = 0;"
+                            >
                         </div>
                         <div>
                             <label for="sleep_hours_per_day" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny snu dziennie</label>
-                            <input type="number" id="sleep_hours_per_day" x-model="formData.sleep_hours_per_day" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny dziennie" required>
+                            <input 
+                                type="number" 
+                                id="sleep_hours_per_day" 
+                                x-model="formData.sleep_hours_per_day" 
+                                min="0" 
+                                max="24" 
+                                maxlength="2" 
+                                class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" 
+                                placeholder="Godziny dziennie" 
+                                required
+                                @input="if ($event.target.value > 24) $event.target.value = 24; if ($event.target.value < 0) $event.target.value = 0;"
+                            >
                         </div>
                     </div>
 
