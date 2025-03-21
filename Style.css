@@ -11,6 +11,17 @@ select, input[type="number"] {
     transition: all 0.2s ease-in-out;
 }
 
+/* Usunięcie strzałek z pól liczbowych */
+input[type="number"].no-spinner::-webkit-inner-spin-button,
+input[type="number"].no-spinner::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"].no-spinner {
+    appearance: textfield; /* Standard */
+    -moz-appearance: textfield; /* Firefox */
+}
+
 /* Animacja przy kliknięciu/fokusie */
 select:focus, input[type="number"]:focus {
     border-color: #60a5fa; /* blue-400 */
@@ -42,6 +53,22 @@ select:focus, input[type="number"]:focus {
 }
 .animate-row:hover {
     background-color: #3A3A3A;
+}
+
+/* Animacja dla checkboxów */
+@keyframes checkFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-check {
+    animation: checkFadeIn 0.2s ease-in-out;
 }
 
 /* Ukrycie scrollbar'a */
