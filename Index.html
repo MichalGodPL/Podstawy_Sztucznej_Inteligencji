@@ -26,6 +26,34 @@
             console.log('pywebview gotowe');
         });
     </script>
+
+    <style>
+        /* Animacja kropek ładowania */
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: #1E40AF; /* Kolor niebieski jak przyciski (bg-blue-700) */
+            border-radius: 50%;
+            margin: 0 8px;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.8); }
+            40% { transform: scale(1.2); }
+        }
+    </style>
 </head>
 <body class="text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
     <div x-data="{
@@ -39,6 +67,8 @@
             recall: 'N/A',
             f1_score: 'N/A'
         },
+        isTraining: false, // Flaga wskazująca, czy model jest trenowany
+        formSubmitted: false, // Flaga wskazująca, czy formularz został zatwierdzony
         formData: {
             age: '',
             sex: 'Mężczyzna',
@@ -77,7 +107,24 @@
                 scrollContainer.scrollTop = this.scrollPositions[tab];
             }
         },
+        isFormValid() {
+            // Sprawdzanie, czy wszystkie wymagane pola są wypełnione
+            return this.formData.age !== '' &&
+                   this.formData.cholesterol !== '' &&
+                   this.formData.blood_pressure !== '' &&
+                   this.formData.heart_rate !== '' &&
+                   this.formData.exercise_hours_per_week !== '' &&
+                   this.formData.stress_level !== '' &&
+                   this.formData.sedentary_hours_per_day !== '' &&
+                   this.formData.triglycerides !== '' &&
+                   this.formData.sleep_hours_per_day !== '';
+        },
         submitForm() {
+            if (!this.isFormValid()) {
+                alert('Proszę wypełnić wszystkie pola formularza.');
+                return;
+            }
+
             const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' });
             const time = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
             
@@ -88,8 +135,17 @@
                 time: time
             };
 
-            // Wywołaj funkcję Pythona przez pywebview
-            window.pywebview.api.predict(dataToSend)
+            // Włącz flagę treningu i ustaw formularz jako zatwierdzony
+            this.isTraining = true;
+            this.formSubmitted = true;
+            this.activeTab = 'results';
+
+            // Najpierw uruchom PyTorch.py
+            window.pywebview.api.run_script('PyTorch')
+                .then(() => {
+                    // Po zakończeniu treningu wykonaj predykcję
+                    return window.pywebview.api.predict(dataToSend);
+                })
                 .then(data => {
                     if (data.error) {
                         alert('Wystąpił błąd: ' + data.error);
@@ -112,8 +168,7 @@
                         recall: data.metrics?.recall || 'N/A',
                         f1_score: data.metrics?.f1_score || 'N/A'
                     };
-                    this.activeTab = 'results'; // Przejdź do zakładki Wyniki
-                    this.showForm = false;
+                    this.isTraining = false; // Wyłącz flagę treningu
                     // Resetuj formularz
                     this.formData = {
                         age: '',
@@ -138,7 +193,8 @@
                 })
                 .catch(error => {
                     console.error('Błąd:', error);
-                    alert('Wystąpił problem z predykcją.');
+                    alert('Wystąpił problem z predykcją lub treningiem.');
+                    this.isTraining = false;
                 });
         }
     }" 
@@ -295,11 +351,11 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
                             <label for="age" class="block text-[0.75rem] font-medium text-primary mb-1">Wiek</label>
-                            <input type="number" id="age" x-model="formData.age" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj wiek">
+                            <input type="number" id="age" x-model="formData.age" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj wiek" required>
                         </div>
                         <div>
                             <label for="sex" class="block text-[0.75rem] font-medium text-primary mb-1">Płeć</label>
-                            <select id="sex" x-model="formData.sex" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
+                            <select id="sex" x-model="formData.sex" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white" required>
                                 <option>Mężczyzna</option>
                                 <option>Kobieta</option>
                             </select>
@@ -310,15 +366,15 @@
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div>
                             <label for="cholesterol" class="block text-[0.75rem] font-medium text-primary mb-1">Poziom cholesterolu (mg/dL)</label>
-                            <input type="number" id="cholesterol" x-model="formData.cholesterol" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj poziom cholesterolu">
+                            <input type="number" id="cholesterol" x-model="formData.cholesterol" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj poziom cholesterolu" required>
                         </div>
                         <div>
                             <label for="blood_pressure" class="block text-[0.75rem] font-medium text-primary mb-1">Ciśnienie krwi (mmHg)</label>
-                            <input type="number" id="blood_pressure" x-model="formData.blood_pressure" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj ciśnienie">
+                            <input type="number" id="blood_pressure" x-model="formData.blood_pressure" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj ciśnienie" required>
                         </div>
                         <div>
                             <label for="heart_rate" class="block text-[0.75rem] font-medium text-primary mb-1">Tętno (BPM)</label>
-                            <input type="number" id="heart_rate" x-model="formData.heart_rate" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj tętno">
+                            <input type="number" id="heart_rate" x-model="formData.heart_rate" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj tętno" required>
                         </div>
                     </div>
 
@@ -393,15 +449,15 @@
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div>
                             <label for="exercise_hours_per_week" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny ćwiczeń tygodniowo</label>
-                            <input type="number" id="exercise_hours_per_week" x-model="formData.exercise_hours_per_week" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny tygodniowo">
+                            <input type="number" id="exercise_hours_per_week" x-model="formData.exercise_hours_per_week" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny tygodniowo" required>
                         </div>
                         <div>
                             <label for="sedentary_hours_per_day" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny siedzące dziennie</label>
-                            <input type="number" id="sedentary_hours_per_day" x-model="formData.sedentary_hours_per_day" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny dziennie">
+                            <input type="number" id="sedentary_hours_per_day" x-model="formData.sedentary_hours_per_day" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny dziennie" required>
                         </div>
                         <div>
                             <label for="sleep_hours_per_day" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny snu dziennie</label>
-                            <input type="number" id="sleep_hours_per_day" x-model="formData.sleep_hours_per_day" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny dziennie">
+                            <input type="number" id="sleep_hours_per_day" x-model="formData.sleep_hours_per_day" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny dziennie" required>
                         </div>
                     </div>
 
@@ -409,11 +465,11 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
                             <label for="stress_level" class="block text-[0.75rem] font-medium text-primary mb-1">Poziom stresu (0-9)</label>
-                            <input type="number" id="stress_level" x-model="formData.stress_level" min="0" max="9" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="0-9">
+                            <input type="number" id="stress_level" x-model="formData.stress_level" min="0" max="9" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="0-9" required>
                         </div>
                         <div>
                             <label for="diet" class="block text-[0.75rem] font-medium text-primary mb-1">Jakość diety</label>
-                            <select id="diet" x-model="formData.diet" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
+                            <select id="diet" x-model="formData.diet" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white" required>
                                 <option>Zdrowa</option>
                                 <option>Umiarkowana</option>
                                 <option>Słaba</option>
@@ -425,11 +481,11 @@
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         <div>
                             <label for="triglycerides" class="block text-[0.75rem] font-medium text-primary mb-1">Poziom trójglicerydów (mg/dL)</label>
-                            <input type="number" id="triglycerides" x-model="formData.triglycerides" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj poziom trójglicerydów">
+                            <input type="number" id="triglycerides" x-model="formData.triglycerides" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj poziom trójglicerydów" required>
                         </div>
                         <div>
                             <label for="continent" class="block text-[0.75rem] font-medium text-primary mb-1">Kontynent</label>
-                            <select id="continent" x-model="formData.continent" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white">
+                            <select id="continent" x-model="formData.continent" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white" required>
                                 <option>Afryka</option>
                                 <option>Ameryka Północna</option>
                                 <option>Ameryka Południowa</option>
@@ -442,7 +498,10 @@
                     
                     <!-- Przycisk Zatwierdź -->
                     <div class="text-center mt-6">
-                        <button type="submit" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-xl transition">Zatwierdź</button>
+                        <button type="submit" 
+                                :disabled="!isFormValid() || isTraining" 
+                                :class="{'bg-blue-700 hover:bg-blue-800': isFormValid() && !isTraining, 'bg-gray-500 cursor-not-allowed': !isFormValid() || isTraining}" 
+                                class="w-full py-3 text-white font-semibold rounded-xl transition">Zatwierdź</button>
                     </div>
                 </div>
             </form>
@@ -461,60 +520,71 @@
                 <div x-ref="scrollContainer-results" 
                      @scroll="saveScrollPosition('results')"
                      class="h-full overflow-y-auto no-scrollbar space-y-6 p-4">
-                    <h2 class="text-primary mb-4 text-lg">Wyniki</h2>
-                    
-                    <!-- Kafelki z metrykami modelu -->
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="section-bg p-4 rounded-xl animate-tile">
-                            <p class="text-sm text-secondary">Dokładność</p>
-                            <p class="text-xl font-semibold text-primary" x-text="modelMetrics.accuracy"></p>
+                    <template x-if="!formSubmitted || isTraining">
+                        <div class="loading-dots">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
                         </div>
-                        <div class="section-bg p-4 rounded-xl animate-tile">
-                            <p class="text-sm text-secondary">Precyzja</p>
-                            <p class="text-xl font-semibold text-primary" x-text="modelMetrics.precision"></p>
-                        </div>
-                        <div class="section-bg p-4 rounded-xl animate-tile">
-                            <p class="text-sm text-secondary">Czułość</p>
-                            <p class="text-xl font-semibold text-primary" x-text="modelMetrics.recall"></p>
-                        </div>
-                        <div class="section-bg p-4 rounded-xl animate-tile">
-                            <p class="text-sm text-secondary">F1-Score</p>
-                            <p class="text-xl font-semibold text-primary" x-text="modelMetrics.f1_score"></p>
-                        </div>
-                    </div>
+                    </template>
+                    <template x-if="formSubmitted && !isTraining">
+                        <div>
+                            <h2 class="text-primary mb-4 text-lg">Wyniki</h2>
+                            
+                            <!-- Kafelki z metrykami modelu -->
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div class="section-bg p-4 rounded-xl animate-tile">
+                                    <p class="text-sm text-secondary">Dokładność</p>
+                                    <p class="text-xl font-semibold text-primary" x-text="modelMetrics.accuracy"></p>
+                                </div>
+                                <div class="section-bg p-4 rounded-xl animate-tile">
+                                    <p class="text-sm text-secondary">Precyzja</p>
+                                    <p class="text-xl font-semibold text-primary" x-text="modelMetrics.precision"></p>
+                                </div>
+                                <div class="section-bg p-4 rounded-xl animate-tile">
+                                    <p class="text-sm text-secondary">Czułość</p>
+                                    <p class="text-xl font-semibold text-primary" x-text="modelMetrics.recall"></p>
+                                </div>
+                                <div class="section-bg p-4 rounded-xl animate-tile">
+                                    <p class="text-sm text-secondary">F1-Score</p>
+                                    <p class="text-xl font-semibold text-primary" x-text="modelMetrics.f1_score"></p>
+                                </div>
+                            </div>
 
-                    <!-- Tabela z wynikami -->
-                    <div class="section-bg rounded-xl overflow-hidden">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="table-header-bg text-secondary text-sm">
-                                    <th class="p-3">Data</th>
-                                    <th class="p-3">Godzina</th>
-                                    <th class="p-3">Wiek</th>
-                                    <th class="p-3">Cholesterol</th>
-                                    <th class="p-3">Ciśnienie</th>
-                                    <th class="p-3">Tętno</th>
-                                    <th class="p-3">Ryzyko</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template x-for="test in testHistory" :key="test.date + test.time">
-                                    <tr class="border-t table-border animate-row">
-                                        <td class="p-3" x-text="test.date"></td>
-                                        <td class="p-3" x-text="test.time"></td>
-                                        <td class="p-3" x-text="test.age"></td>
-                                        <td class="p-3" x-text="test.cholesterol"></td>
-                                        <td class="p-3" x-text="test.blood_pressure"></td>
-                                        <td class="p-3" x-text="test.heart_rate"></td>
-                                        <td class="p-3" x-text="test.risk"></td>
-                                    </tr>
-                                </template>
-                                <tr x-if="testHistory.length === 0" class="border-t table-border">
-                                    <td colspan="7" class="p-3 text-center text-secondary">Brak wyników w historii.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                            <!-- Tabela z wynikami -->
+                            <div class="section-bg rounded-xl overflow-hidden">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="table-header-bg text-secondary text-sm">
+                                            <th class="p-3">Data</th>
+                                            <th class="p-3">Godzina</th>
+                                            <th class="p-3">Wiek</th>
+                                            <th class="p-3">Cholesterol</th>
+                                            <th class="p-3">Ciśnienie</th>
+                                            <th class="p-3">Tętno</th>
+                                            <th class="p-3">Ryzyko</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="test in testHistory" :key="test.date + test.time">
+                                            <tr class="border-t table-border animate-row">
+                                                <td class="p-3" x-text="test.date"></td>
+                                                <td class="p-3" x-text="test.time"></td>
+                                                <td class="p-3" x-text="test.age"></td>
+                                                <td class="p-3" x-text="test.cholesterol"></td>
+                                                <td class="p-3" x-text="test.blood_pressure"></td>
+                                                <td class="p-3" x-text="test.heart_rate"></td>
+                                                <td class="p-3" x-text="test.risk"></td>
+                                            </tr>
+                                        </template>
+                                        <tr x-if="testHistory.length === 0" class="border-t table-border">
+                                            <td colspan="7" class="p-3 text-center text-secondary">Brak wyników w historii.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
 

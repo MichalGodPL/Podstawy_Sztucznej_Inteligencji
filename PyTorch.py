@@ -10,8 +10,6 @@ from sklearn.utils import resample
 from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, precision_score, f1_score
 from torch.utils.data import DataLoader, TensorDataset
 
-
-
 # Wczytywanie danych
 data = pd.read_csv('DanePrzeczyszczone.csv')
 
@@ -94,7 +92,7 @@ pos_weight = torch.tensor([len(y_train) / sum(y_train)])
 criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
 # Trening modelu
-epochs = 150
+epochs = 100
 train_accuracy_list = []
 test_accuracy_list = []
 
@@ -143,9 +141,19 @@ print(f'Accuracy: {accuracy:.4f}')
 print(f'Confusion Matrix:\n{conf_matrix}')
 print(f'Recall: {recall:.4f}, Precision: {precision:.4f}, F1-score: {f1:.4f}')
 
+# Zapis metryk do pliku metrics.pkl
+metrics = {
+    'accuracy': str(round(accuracy, 4)),
+    'precision': str(round(precision, 4)),
+    'recall': str(round(recall, 4)),
+    'f1_score': str(round(f1, 4))
+}
+with open('metrics.pkl', 'wb') as f:
+    pickle.dump(metrics, f)
+
 # Zapis modelu i scaler'a lokalnie
 torch.save(model.state_dict(), 'heart_disease_model.pth')
 with open('scaler.pkl', 'wb') as f:
     pickle.dump(scaler, f)
 
-print("Model i scaler zostały zapisane lokalnie jako 'heart_disease_model.pth' i 'scaler.pkl'.")
+print("Model, scaler i metryki zostały zapisane lokalnie jako 'heart_disease_model.pth', 'scaler.pkl' i 'metrics.pkl'.")

@@ -70,12 +70,25 @@ class Api:
         except Exception as e:
             return {'error': str(e)}
 
-# Funkcja do uruchamiania skryptu w wątku
+    def run_script(self, script_name):
+        """Uruchamia skrypt w osobnym wątku i czeka na jego zakończenie."""
+        try:
+            # Dynamiczne załadowanie i uruchomienie modułu w nowym wątku
+            def run():
+                module = importlib.import_module(script_name)
+                print(f"Uruchomiono {script_name} w wątku.")
+
+            thread = threading.Thread(target=run, daemon=True)
+            thread.start()
+            thread.join()  # Czekaj na zakończenie wątku
+            return {'status': 'success'}
+        except Exception as e:
+            return {'error': str(e)}
+
+# Funkcja do uruchamiania skryptu w wątku (dla start_scripts)
 def run_script(script_name):
     try:
-        # Dynamiczne załadowanie modułu
         module = importlib.import_module(script_name)
-        # Kod modułu zostanie wykonany automatycznie po zaimportowaniu
         print(f"Uruchomiono {script_name} w wątku.")
     except Exception as e:
         print(f"Błąd podczas uruchamiania {script_name}: {e}")
@@ -85,7 +98,7 @@ def start_scripts():
     print("Aplikacja uruchomiona.")
     # Uruchamianie EdycjaDanych.py w osobnym wątku
     threading.Thread(target=run_script, args=('EdycjaDanych',), daemon=True).start()
-    # Uruchamianie PyTorch.py w osobnym wątku
+    # Uruchamianie PyTorch.py w osobnym wątku (opcjonalnie przy starcie)
     threading.Thread(target=run_script, args=('PyTorch',), daemon=True).start()
 
 # Tworzenie okna WebView
