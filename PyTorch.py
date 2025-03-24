@@ -33,20 +33,25 @@ y = df_balanced['target'].values
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Podział na zbiory treningowe i testowe
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+# Podział na zbiory: treningowy (80%), walidacyjny (10%), testowy (10%)
+X_temp, X_test, y_temp, y_test = train_test_split(X_scaled, y, test_size=0.1, random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.1111, random_state=42)  # 0.1111 z 0.9 daje ~10% oryginalnego zbioru
 
 # Konwersja na tensory
 X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
 y_train_tensor = torch.tensor(y_train, dtype=torch.float32).unsqueeze(1)
+X_val_tensor = torch.tensor(X_val, dtype=torch.float32)
+y_val_tensor = torch.tensor(y_val, dtype=torch.float32).unsqueeze(1)
 X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
 y_test_tensor = torch.tensor(y_test, dtype=torch.float32).unsqueeze(1)
 
 # Tworzenie DataLoaderów
 batch_size = 256
 train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
 test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+val_loader = DataLoader(val_dataset, batch_size=len(X_val_tensor), shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=len(X_test_tensor), shuffle=False)
 
 # Nowa architektura sieci
@@ -94,9 +99,11 @@ criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 # Trening modelu
 epochs = 100
 train_accuracy_list = []
+val_accuracy_list = []
 test_accuracy_list = []
 
 for epoch in range(epochs):
+    # Trening
     model.train()
     correct, total, epoch_loss = 0, 0, 0
     for X_batch, y_batch in train_loader:
@@ -112,20 +119,29 @@ for epoch in range(epochs):
     train_accuracy = correct / total
     train_accuracy_list.append(train_accuracy * 100)
 
-    # Testowanie modelu
+    # Walidacja
     model.eval()
+    with torch.no_grad():
+        X_val, y_val = next(iter(val_loader))
+        y_val_pred = model(X_val)
+        val_predicted = (y_val_pred > 0).float()
+        val_accuracy = (val_predicted == y_val).float().mean().item() * 100
+        val_accuracy_list.append(val_accuracy)
+
+    # Testowanie
     with torch.no_grad():
         X_test, y_test = next(iter(test_loader))
         y_test_pred = model(X_test)
         test_predicted = (y_test_pred > 0).float()
         test_accuracy = (test_predicted == y_test).float().mean().item() * 100
         test_accuracy_list.append(test_accuracy)
+
     scheduler.step(epoch_loss)
 
     if (epoch + 1) % 10 == 0:
-        print(f"Epoch {epoch+1}/{epochs}, Loss: {epoch_loss:.4f}, Train Acc: {train_accuracy*100:.2f}%, Test Acc: {test_accuracy:.2f}%")
+        print(f"Epoch {epoch+1}/{epochs}, Loss: {epoch_loss:.4f}, Train Acc: {train_accuracy*100:.2f}%, Val Acc: {val_accuracy:.2f}%, Test Acc: {test_accuracy:.2f}%")
 
-# Ocena modelu
+# Ocena modelu na zbiorze testowym
 model.eval()
 with torch.no_grad():
     y_test_pred = model(X_test_tensor)
