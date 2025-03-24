@@ -53,6 +53,23 @@
             0%, 80%, 100% { transform: scale(0.8); }
             40% { transform: scale(1.2); }
         }
+        /* Styl dla logo AGH i jego kontenera */
+        .agh-logo-container {
+            width: 100px; /* Powiększony kontener */
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, #A6192E, #1A3C34); /* Gradient pasujący do banner-bg */
+            border-radius: 50%; /* Okrągły kształt */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Subtelny cień */
+            padding: 8px; /* Odstęp między logo a krawędzią kontenera */
+        }
+        .agh-logo {
+            width: 80px; /* Powiększone logo */
+            height: 80px;
+            object-fit: contain; /* Zachowuje proporcje logo */
+        }
     </style>
 </head>
 <body class="text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
@@ -223,7 +240,10 @@
                             <p class="text-sm text-gray-200">Akademii Górniczo-Hutniczej</p>
                             <a href="https://www.agh.edu.pl/" target="_blank" class="mt-2 inline-block px-4 py-2 button-bg font-semibold rounded-full">Dowiedz się więcej</a>
                         </div>
-                        <div class="w-16 h-16 bg-gray-300 rounded-full"></div>
+                        <!-- Kontener z logo AGH -->
+                        <div class="agh-logo-container">
+                            <img src="agh-logo.png" alt="AGH Logo" class="agh-logo">
+                        </div>
                     </div>
 
                     <div>
@@ -624,8 +644,8 @@
             </div>
         </div>
 
-        <!-- Zakładki -->
-        <div class="p-4">
+        <!-- Zakładki - Przesunięte niżej -->
+        <div class="p-4 mt-6">
             <div class="flex justify-center space-x-6 section-bg p-3 rounded-2xl shadow-lg border border-gray-700">
                 <button @click="activeTab = 'dashboard'" :class="{'bg-blue-700 text-white': activeTab === 'dashboard', 'bg-gray-700 text-gray-300': activeTab !== 'dashboard'}" class="px-8 py-2 rounded-xl transition font-medium">Dashboard</button>
                 <button @click="activeTab = 'assessment'" :class="{'bg-blue-700 text-white': activeTab === 'assessment', 'bg-gray-700 text-gray-300': activeTab !== 'assessment'}" class="px-8 py-2 rounded-xl transition font-medium">Ocena</button>
