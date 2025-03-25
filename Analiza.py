@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, jsonify
 
 # Definicja modelu
 class ImprovedHeartDiseaseModel(nn.Module):
-    def __init__(self, input_dim=18):
+    def __init__(self, input_dim=17):  # Zmiana z 18 na 17
         super(ImprovedHeartDiseaseModel, self).__init__()
         self.fc1 = nn.Linear(input_dim, 256)
         self.bn1 = nn.BatchNorm1d(256)
@@ -41,7 +41,7 @@ class ImprovedHeartDiseaseModel(nn.Module):
 app = Flask(__name__)
 
 # Ładowanie modelu i skalera
-model = ImprovedHeartDiseaseModel(input_dim=18)
+model = ImprovedHeartDiseaseModel(input_dim=17)  # Zmiana z 18 na 17
 model.load_state_dict(torch.load('heart_disease_model.pth'))
 model.eval()
 
@@ -82,10 +82,9 @@ def predict():
             float(form_data['stress_level']),
             float(form_data['sedentary_hours_per_day']),
             float(form_data['triglycerides']),
-            1 if form_data['physical_activity_days_per_week'] else 0,
             float(form_data['sleep_hours_per_day']),
             {'Afryka': 0, 'Ameryka Północna': 1, 'Ameryka Południowa': 2, 'Azja': 3, 'Australia': 4, 'Europa': 5}[form_data['continent']]
-        ]
+        ]  # Usunięto 'physical_activity_days_per_week'
 
         scaled_data = scaler.transform(np.array([features]))
         input_tensor = torch.tensor(scaled_data, dtype=torch.float32)
@@ -108,7 +107,7 @@ def predict():
         return jsonify({'error': str(e)}), 400
 
 if __name__ == "__main__":
-    new_data = np.random.rand(1, 18)
+    new_data = np.random.rand(1, 17)  # Zmiana z 18 na 17
     probabilities, predictions = predict_risk(new_data, model, scaler)
     print(f"Prawdopodobieństwo zawału: {probabilities[0]:.4f}")
     print(f"Predykcja (0=brak ryzyka, 1=ryzyko): {int(predictions[0])}")

@@ -102,7 +102,6 @@
             stress_level: '',
             sedentary_hours_per_day: '',
             triglycerides: '',
-            physical_activity_days_per_week: false,
             sleep_hours_per_day: '',
             continent: 'Europa'
         },
@@ -194,7 +193,6 @@
                         stress_level: '',
                         sedentary_hours_per_day: '',
                         triglycerides: '',
-                        physical_activity_days_per_week: false,
                         sleep_hours_per_day: '',
                         continent: 'Europa'
                     };
@@ -440,16 +438,6 @@
                                 </div>
                             </div>
                             <span class="text-sm text-secondary" x-text="formData.medication_use ? 'Tak' : 'Nie'"></span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <label for="physical_activity_days_per_week" class="block text-[0.75rem] font-medium text-primary mb-1">Aktywność fizyczna (dni w tygodniu)</label>
-                            <div class="relative">
-                                <input type="checkbox" id="physical_activity_days_per_week" x-model="formData.physical_activity_days_per_week" class="opacity-0 absolute h-6 w-6">
-                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration200" :class="formData.physical_activity_days_per_week ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
-                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.physical_activity_days_per_week"></i>
-                                </div>
-                            </div>
-                            <span class="text-sm text-secondary" x-text="formData.physical_activity_days_per_week ? 'Tak' : 'Nie'"></span>
                         </div>
                     </div>
 

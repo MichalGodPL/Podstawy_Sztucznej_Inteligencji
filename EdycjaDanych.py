@@ -31,7 +31,7 @@ data_summary = f"""
 
 # 2. Czyszczenie Danych
 
-drop_cols = ["Patient ID", "Country","Income", "Hemisphere"]
+drop_cols = ["Patient ID", "Country","Income", "Hemisphere", "Physical Activity Days Per Week"]
 
 df = df.drop(columns=[col for col in drop_cols if col in df.columns])
 

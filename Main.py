@@ -10,7 +10,7 @@ from Analiza import ImprovedHeartDiseaseModel, scaler, model  # Import modelu i 
 class Api:
     def predict(self, data):
         try:
-            # Przetwarzanie danych z formularza HTML (18 cech)
+            # Przetwarzanie danych z formularza HTML (17 cech po usunięciu 'Physical Activity Days Per Week')
             features = [
                 float(data['age']),
                 1 if data['sex'] == 'Mężczyzna' else 0,
@@ -27,7 +27,6 @@ class Api:
                 float(data['stress_level']),
                 float(data['sedentary_hours_per_day']),
                 float(data['triglycerides']),
-                1 if data['physical_activity_days_per_week'] else 0,
                 float(data['sleep_hours_per_day']),
                 {'Afryka': 0, 'Ameryka Północna': 1, 'Ameryka Południowa': 2, 'Azja': 3, 'Australia': 4, 'Europa': 5}[data['continent']]
             ]
