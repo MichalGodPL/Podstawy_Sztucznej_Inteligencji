@@ -70,6 +70,12 @@
             height: 80px;
             object-fit: contain; /* Zachowuje proporcje logo */
         }
+        /* Styl dla wyśrodkowania ikony kosza */
+        .action-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 <body class="text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
@@ -309,7 +315,7 @@
                                         <th class="p-3">Ciśnienie</th>
                                         <th class="p-3">Tętno</th>
                                         <th class="p-3">Ryzyko</th>
-                                        <th class="p-3">Akcje</th>
+                                        <th class="p-3 text-center">Akcje</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -322,14 +328,14 @@
                                             <td class="p-3" x-text="test.blood_pressure"></td>
                                             <td class="p-3" x-text="test.heart_rate"></td>
                                             <td class="p-3" x-text="test.risk"></td>
-                                            <td class="p-3">
+                                            <td class="p-3 action-cell">
                                                 <button @click="testHistory.splice(index, 1)" class="text-red-500 hover:text-red-400" title="Usuń">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </td>
                                         </tr>
                                     </template>
-                                    <tr x-if="testHistory.length === 0" class="border-t table-border">
+                                    <tr x-show="testHistory.length === 0" class="border-t table-border">
                                         <td colspan="8" class="p-3 text-center text-secondary">Brak testów w historii.</td>
                                     </tr>
                                 </tbody>
@@ -595,7 +601,7 @@
                                                 <td class="p-3" x-text="test.risk"></td>
                                             </tr>
                                         </template>
-                                        <tr x-if="testHistory.length === 0" class="border-t table-border">
+                                        <tr x-show="testHistory.length === 0" class="border-t table-border">
                                             <td colspan="7" class="p-3 text-center text-secondary">Brak wyników w historii.</td>
                                         </tr>
                                     </tbody>
