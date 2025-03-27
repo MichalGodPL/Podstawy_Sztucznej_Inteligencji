@@ -3,21 +3,23 @@ import torch.nn as nn
 import pickle
 import numpy as np
 from flask import Flask, render_template, request, jsonify
+import os
+import sys
 
-# Definicja modelu
+# Definicja modelu z elastyczną architekturą
 class ImprovedHeartDiseaseModel(nn.Module):
-    def __init__(self, input_dim=17):  # Zmiana z 18 na 17
+    def __init__(self, input_dim, hidden_sizes, dropout):
         super(ImprovedHeartDiseaseModel, self).__init__()
-        self.fc1 = nn.Linear(input_dim, 256)
-        self.bn1 = nn.BatchNorm1d(256)
-        self.fc2 = nn.Linear(256, 128)
-        self.bn2 = nn.BatchNorm1d(128)
-        self.fc3 = nn.Linear(128, 64)
-        self.bn3 = nn.BatchNorm1d(64)
-        self.fc4 = nn.Linear(64, 32)
-        self.bn4 = nn.BatchNorm1d(32)
-        self.output = nn.Linear(32, 1)
-        self.dropout = 0.3
+        layers = []
+        prev_size = input_dim
+        for size in hidden_sizes:
+            layers.append(nn.Linear(prev_size, size))
+            layers.append(nn.BatchNorm1d(size))
+            layers.append(nn.SiLU())
+            layers.append(nn.Dropout(dropout))
+            prev_size = size
+        self.layers = nn.Sequential(*layers)
+        self.output = nn.Linear(prev_size, 1)
         self.initialize_weights()
 
     def initialize_weights(self):
@@ -27,26 +29,43 @@ class ImprovedHeartDiseaseModel(nn.Module):
                 nn.init.zeros_(m.bias)
 
     def forward(self, x):
-        x = torch.nn.SiLU()(self.bn1(self.fc1(x)))
-        x = torch.nn.functional.dropout(x, p=self.dropout, training=self.training)
-        x = torch.nn.SiLU()(self.bn2(self.fc2(x)))
-        x = torch.nn.functional.dropout(x, p=self.dropout, training=self.training)
-        x = torch.nn.SiLU()(self.bn3(self.fc3(x)))
-        x = torch.nn.functional.dropout(x, p=self.dropout, training=self.training)
-        x = torch.nn.SiLU()(self.bn4(self.fc4(x)))
-        x = torch.nn.functional.dropout(x, p=self.dropout, training=self.training)
+        x = self.layers(x)
         return self.output(x)
 
 # Inicjalizacja Flask
 app = Flask(__name__)
 
-# Ładowanie modelu i skalera
-model = ImprovedHeartDiseaseModel(input_dim=17)  # Zmiana z 18 na 17
-model.load_state_dict(torch.load('heart_disease_model.pth'))
-model.eval()
+# Wczytywanie najlepszych hiperparametrów
+try:
+    if not os.path.exists('best_params.pkl'):
+        raise FileNotFoundError("Plik 'best_params.pkl' nie istnieje. Uruchom 'PyTorch.py' najpierw.")
+    with open('best_params.pkl', 'rb') as f:
+        best_params = pickle.load(f)
+    print("Wczytano najlepsze hiperparametry z 'best_params.pkl'.")
+except FileNotFoundError as e:
+    print(f"Błąd: {e}")
+    sys.exit(1)
 
-with open('scaler.pkl', 'rb') as f:
-    scaler = pickle.load(f)
+# Ładowanie modelu i skalera
+try:
+    if not os.path.exists('heart_disease_model_final.pth') or not os.path.exists('scaler.pkl'):
+        raise FileNotFoundError("Plik 'heart_disease_model_final.pth' lub 'scaler.pkl' nie istnieje. Uruchom 'PyTorch.py' najpierw.")
+
+    input_dim = 17  # Liczba cech po usunięciu 'Physical Activity Days Per Week'
+    model = ImprovedHeartDiseaseModel(input_dim=input_dim, hidden_sizes=best_params['hidden_sizes'], dropout=best_params['dropout'])
+    model.load_state_dict(torch.load('heart_disease_model_final.pth'))
+    model.eval()
+    print("Wczytano model z 'heart_disease_model_final.pth'.")
+
+    with open('scaler.pkl', 'rb') as f:
+        scaler = pickle.load(f)
+    print("Wczytano scaler z 'scaler.pkl'.")
+except FileNotFoundError as e:
+    print(f"Błąd: {e}")
+    sys.exit(1)
+except Exception as e:
+    print(f"Błąd podczas wczytywania modelu lub skalera: {e}")
+    sys.exit(1)
 
 # Funkcja predykcji
 def predict_risk(data, model, scaler, threshold=0.5):
@@ -84,7 +103,7 @@ def predict():
             float(form_data['triglycerides']),
             float(form_data['sleep_hours_per_day']),
             {'Afryka': 0, 'Ameryka Północna': 1, 'Ameryka Południowa': 2, 'Azja': 3, 'Australia': 4, 'Europa': 5}[form_data['continent']]
-        ]  # Usunięto 'physical_activity_days_per_week'
+        ]
 
         scaled_data = scaler.transform(np.array([features]))
         input_tensor = torch.tensor(scaled_data, dtype=torch.float32)
@@ -107,7 +126,7 @@ def predict():
         return jsonify({'error': str(e)}), 400
 
 if __name__ == "__main__":
-    new_data = np.random.rand(1, 17)  # Zmiana z 18 na 17
+    new_data = np.random.rand(1, 17)
     probabilities, predictions = predict_risk(new_data, model, scaler)
     print(f"Prawdopodobieństwo zawału: {probabilities[0]:.4f}")
     print(f"Predykcja (0=brak ryzyka, 1=ryzyko): {int(predictions[0])}")

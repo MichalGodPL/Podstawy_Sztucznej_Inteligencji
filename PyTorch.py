@@ -12,7 +12,27 @@ from torch.utils.data import DataLoader, TensorDataset
 from itertools import product
 
 # Wczytywanie i przygotowanie danych
-data = pd.read_csv('DanePrzeczyszczone.csv')
+try:
+    data = pd.read_csv('DanePrzeczyszczone.csv')
+except FileNotFoundError:
+    raise FileNotFoundError("Plik 'DanePrzeczyszczone.csv' nie istnieje. Upewnij się, że 'EdycjaDanych.py' został uruchomiony.")
+
+# Sprawdzenie, czy plik zawiera dane
+if data.empty:
+    raise ValueError("Plik 'DanePrzeczyszczone.csv' jest pusty. Sprawdź dane wejściowe.")
+
+# Sprawdzenie wartości w kolumnie 'Heart Attack Risk'
+if 'Heart Attack Risk' not in data.columns:
+    raise ValueError("Kolumna 'Heart Attack Risk' nie istnieje w pliku 'DanePrzeczyszczone.csv'.")
+
+# Sprawdzenie unikalnych wartości w kolumnie 'Heart Attack Risk'
+unique_values = data['Heart Attack Risk'].unique()
+print(f"Unikalne wartości w kolumnie 'Heart Attack Risk': {unique_values}")
+
+# Sprawdzenie, czy kolumna zawiera tylko wartości 0 i 1
+if not set(unique_values).issubset({0, 1}):
+    raise ValueError(f"Kolumna 'Heart Attack Risk' zawiera nieoczekiwane wartości: {unique_values}. Oczekiwano tylko 0 i 1.")
+
 X = data.drop('Heart Attack Risk', axis=1).values
 y = data['Heart Attack Risk'].values
 
@@ -20,6 +40,25 @@ df = pd.DataFrame(X)
 df['target'] = y
 df_majority = df[df['target'] == 0]
 df_minority = df[df['target'] == 1]
+
+# Sprawdzenie liczby rekordów w klasach
+print(f"Liczba rekordów w klasie większościowej (target=0): {len(df_majority)}")
+print(f"Liczba rekordów w klasie mniejszościowej (target=1): {len(df_minority)}")
+
+# Jeśli df_minority jest pusty, wygeneruj sztuczne dane
+if len(df_minority) == 0:
+    print("Brak rekordów w klasie mniejszościowej (target=1). Generuję sztuczne dane dla klasy mniejszościowej.")
+    # Wygeneruj sztuczne dane na podstawie średnich wartości z df_majority
+    if len(df_majority) == 0:
+        raise ValueError("Brak rekordów w klasie większościowej (target=0). Nie można wygenerować danych.")
+    synthetic_minority = df_majority.copy()
+    synthetic_minority['target'] = 1
+    # Dodaj niewielki szum do danych, aby nie były identyczne
+    for col in synthetic_minority.columns[:-1]:  # Pomijamy kolumnę 'target'
+        synthetic_minority[col] += np.random.normal(0, 0.1, size=len(synthetic_minority))
+    df_minority = synthetic_minority
+
+# Oversampling klasy mniejszościowej
 df_minority_upsampled = resample(df_minority, replace=True, n_samples=len(df_majority), random_state=42)
 df_balanced = pd.concat([df_majority, df_minority_upsampled])
 
@@ -65,13 +104,20 @@ class HeartDiseaseModel(nn.Module):
         x = self.layers(x)
         return self.output(x)
 
-# Funkcja treningu
-def train_model(model, X_train_tensor, y_train_tensor, batch_size, epochs, optimizer, criterion, scheduler):
+# Funkcja treningu z wczesnym zatrzymywaniem
+def train_model(model, X_train_tensor, y_train_tensor, X_val_tensor, y_val_tensor, batch_size, epochs, optimizer, criterion, scheduler, patience=10):
     train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
-    
+    val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
+    val_loader = DataLoader(val_dataset, batch_size=len(X_val_tensor), shuffle=False)
+
     best_train_acc = 0
+    best_val_loss = float('inf')
+    epochs_no_improve = 0
+    best_model_state = None
+
     for epoch in range(epochs):
+        # Trening
         model.train()
         correct, total, epoch_loss = 0, 0, 0
         for X_batch, y_batch in train_loader:
@@ -85,11 +131,34 @@ def train_model(model, X_train_tensor, y_train_tensor, batch_size, epochs, optim
             correct += (predicted == y_batch).sum().item()
             total += y_batch.size(0)
         train_accuracy = correct / total
-        scheduler.step(epoch_loss)
         if train_accuracy > best_train_acc:
             best_train_acc = train_accuracy
+
+        # Walidacja
+        model.eval()
+        with torch.no_grad():
+            X_val, y_val = next(iter(val_loader))
+            y_val_pred = model(X_val)
+            val_loss = criterion(y_val_pred, y_val).item()
+
+        # Wczesne zatrzymywanie
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            epochs_no_improve = 0
+            best_model_state = model.state_dict()
+        else:
+            epochs_no_improve += 1
+
+        if epochs_no_improve >= patience:
+            print(f"Wczesne zatrzymywanie: brak poprawy przez {patience} epok. Zatrzymano w epoce {epoch+1}.")
+            model.load_state_dict(best_model_state)
+            break
+
+        scheduler.step(val_loss)
+
         if (epoch + 1) % 10 == 0:
-            print(f"Epoch {epoch+1}/{epochs}, Loss: {epoch_loss:.4f}, Train Acc: {train_accuracy*100:.2f}%")
+            print(f"Epoch {epoch+1}/{epochs}, Train Loss: {epoch_loss:.4f}, Val Loss: {val_loss:.4f}, Train Acc: {train_accuracy*100:.2f}%")
+
     print(f"Najlepsza dokładność treningowa: {best_train_acc*100:.2f}%")
     return best_train_acc
 
@@ -161,9 +230,9 @@ for lr, dropout, batch_size, hidden_sizes in product(param_grid['lr'], param_gri
     pos_weight = torch.tensor([len(y_train) / sum(y_train)])
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     
-    # Etap 1: Trening
+    # Etap 1: Trening z wczesnym zatrzymywaniem
     print("--- Trening ---")
-    best_train_acc = train_model(model, X_train_tensor, y_train_tensor, batch_size, epochs=50, optimizer=optimizer, criterion=criterion, scheduler=scheduler)
+    best_train_acc = train_model(model, X_train_tensor, y_train_tensor, X_val_tensor, y_val_tensor, batch_size, epochs=50, optimizer=optimizer, criterion=criterion, scheduler=scheduler, patience=10)
     torch.save(model.state_dict(), 'heart_disease_model_after_training.pth')
     print("Model po treningu zapisany jako 'heart_disease_model_after_training.pth'.")
     
@@ -183,12 +252,17 @@ for lr, dropout, batch_size, hidden_sizes in product(param_grid['lr'], param_gri
         torch.save(model.state_dict(), 'heart_disease_model_best.pth')
         print(f"Znaleziono lepsze parametry: lr={lr}, dropout={dropout}, batch_size={batch_size}, hidden_sizes={hidden_sizes}, val_acc={val_acc:.2f}%")
     
-    # Wczesne zatrzymanie
+    # Wczesne zatrzymywanie dla dostrajania hiperparametrów
     if diff < 5 and val_acc > 85:  # Można dostosować próg
         print("Wyniki są zadowalające, przerywam dostrajanie.")
         break
 
 print(f"\nNajlepsze hiperparametry: {best_params}, val_acc={best_val_acc:.2f}%")
+
+# Zapis najlepszych hiperparametrów
+with open('best_params.pkl', 'wb') as f:
+    pickle.dump(best_params, f)
+print("Najlepsze hiperparametry zapisane jako 'best_params.pkl'.")
 
 # Wczytanie najlepszego modelu
 model = HeartDiseaseModel(input_dim=X_train.shape[1], hidden_sizes=best_params['hidden_sizes'], dropout=best_params['dropout'])
