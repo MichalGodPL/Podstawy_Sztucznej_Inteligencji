@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.utils import resample
 from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, precision_score, f1_score
 from torch.utils.data import DataLoader, TensorDataset
+from itertools import product
 
 # Wczytywanie i przygotowanie danych
 data = pd.read_csv('DanePrzeczyszczone.csv')
@@ -38,28 +39,20 @@ y_val_tensor = torch.tensor(y_val, dtype=torch.float32).unsqueeze(1)
 X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
 y_test_tensor = torch.tensor(y_test, dtype=torch.float32).unsqueeze(1)
 
-batch_size = 256
-train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
-val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
-test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
-val_loader = DataLoader(val_dataset, batch_size=len(X_val_tensor), shuffle=False)
-test_loader = DataLoader(test_dataset, batch_size=len(X_test_tensor), shuffle=False)
-
-# Definicja modelu
-class ImprovedHeartDiseaseModel(nn.Module):
-    def __init__(self, input_dim):
-        super(ImprovedHeartDiseaseModel, self).__init__()
-        self.fc1 = nn.Linear(input_dim, 256)
-        self.bn1 = nn.BatchNorm1d(256)
-        self.fc2 = nn.Linear(256, 128)
-        self.bn2 = nn.BatchNorm1d(128)
-        self.fc3 = nn.Linear(128, 64)
-        self.bn3 = nn.BatchNorm1d(64)
-        self.fc4 = nn.Linear(64, 32)
-        self.bn4 = nn.BatchNorm1d(32)
-        self.output = nn.Linear(32, 1)
-        self.dropout = 0
+# Definicja modelu z elastyczną architekturą
+class HeartDiseaseModel(nn.Module):
+    def __init__(self, input_dim, hidden_sizes, dropout):
+        super(HeartDiseaseModel, self).__init__()
+        layers = []
+        prev_size = input_dim
+        for size in hidden_sizes:
+            layers.append(nn.Linear(prev_size, size))
+            layers.append(nn.BatchNorm1d(size))
+            layers.append(nn.SiLU())
+            layers.append(nn.Dropout(dropout))
+            prev_size = size
+        self.layers = nn.Sequential(*layers)
+        self.output = nn.Linear(prev_size, 1)
         self.initialize_weights()
 
     def initialize_weights(self):
@@ -69,30 +62,15 @@ class ImprovedHeartDiseaseModel(nn.Module):
                 nn.init.zeros_(m.bias)
 
     def forward(self, x):
-        x = torch.nn.SiLU()(self.bn1(self.fc1(x)))
-        x = torch.nn.functional.dropout(x, p=self.dropout, training=self.training)
-        x = torch.nn.SiLU()(self.bn2(self.fc2(x)))
-        x = torch.nn.functional.dropout(x, p=self.dropout, training=self.training)
-        x = torch.nn.SiLU()(self.bn3(self.fc3(x)))
-        x = torch.nn.functional.dropout(x, p=self.dropout, training=self.training)
-        x = torch.nn.SiLU()(self.bn4(self.fc4(x)))
-        x = torch.nn.functional.dropout(x, p=self.dropout, training=self.training)
+        x = self.layers(x)
         return self.output(x)
 
-# Inicjalizacja modelu i hiperparametrów
-model = ImprovedHeartDiseaseModel(input_dim=X_train.shape[1])
-optimizer = optim.Adam(model.parameters(), lr=0.01)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, verbose=True)
-pos_weight = torch.tensor([len(y_train) / sum(y_train)])
-criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-
-# Etap 1: Trening modelu
-def train_model(model, train_loader, epochs, optimizer, criterion, scheduler):
+# Funkcja treningu
+def train_model(model, X_train_tensor, y_train_tensor, batch_size, epochs, optimizer, criterion, scheduler):
+    train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+    
     best_train_acc = 0
-    best_epoch = 0
-    train_accuracy_list = []
-
-    print("\n=== Etap 1: Trening modelu ===")
     for epoch in range(epochs):
         model.train()
         correct, total, epoch_loss = 0, 0, 0
@@ -107,55 +85,34 @@ def train_model(model, train_loader, epochs, optimizer, criterion, scheduler):
             correct += (predicted == y_batch).sum().item()
             total += y_batch.size(0)
         train_accuracy = correct / total
-        train_accuracy_list.append(train_accuracy * 100)
-
         scheduler.step(epoch_loss)
-
         if train_accuracy > best_train_acc:
             best_train_acc = train_accuracy
-            best_epoch = epoch + 1
-
         if (epoch + 1) % 10 == 0:
             print(f"Epoch {epoch+1}/{epochs}, Loss: {epoch_loss:.4f}, Train Acc: {train_accuracy*100:.2f}%")
-
-    print(f"\nNajlepsza dokładność na zbiorze treningowym: {best_train_acc*100:.2f}% w epoce {best_epoch}")
-    print("Sugestie hiperparametrów po treningu: lr=0.01, batch_size=256, dropout=0 (obecne wartości).")
+    print(f"Najlepsza dokładność treningowa: {best_train_acc*100:.2f}%")
     return best_train_acc
 
-# Trening
-epochs = 100
-best_train_acc = train_model(model, train_loader, epochs, optimizer, criterion, scheduler)
-torch.save(model.state_dict(), 'heart_disease_model_after_training.pth')
-print("Model po treningu zapisany jako 'heart_disease_model_after_training.pth'.")
-
-# Etap 2: Walidacja modelu
-def validate_model(model, val_loader, best_train_acc):
-    print("\n=== Etap 2: Walidacja modelu ===")
+# Funkcja walidacji
+def validate_model(model, X_val_tensor, y_val_tensor):
+    val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
+    val_loader = DataLoader(val_dataset, batch_size=len(X_val_tensor), shuffle=False)
+    
     model.eval()
     with torch.no_grad():
         X_val, y_val = next(iter(val_loader))
         y_val_pred = model(X_val)
         val_predicted = (y_val_pred > 0).float()
         val_accuracy = (val_predicted == y_val).float().mean().item() * 100
-
-    print(f"Dokładność na zbiorze walidacyjnym: {val_accuracy:.2f}%")
-    print(f"\nPodsumowanie po treningu i walidacji:")
-    print(f"Najlepsza dokładność treningowa: {best_train_acc*100:.2f}%")
     print(f"Dokładność walidacyjna: {val_accuracy:.2f}%")
-    if val_accuracy < best_train_acc * 100 - 10:  # Próg 10% różnicy
-        print("Sugestie: Overfitting wykryty. Zwiększ dropout (np. 0.2) lub zmniejsz lr (np. 0.001).")
-    else:
-        print("Sugestie: Hiperparametry wyglądają dobrze (lr=0.01, dropout=0).")
     return val_accuracy
 
-# Walidacja
-best_val_acc = validate_model(model, val_loader, best_train_acc)
-torch.save(model.state_dict(), 'heart_disease_model_after_validation.pth')
-print("Model po walidacji zapisany jako 'heart_disease_model_after_validation.pth'.")
-
-# Etap 3: Testowanie modelu
-def test_model(model, test_loader):
-    print("\n=== Etap 3: Testowanie modelu ===")
+# Funkcja testowania
+def test_model(model, X_test_tensor, y_test_tensor, batch_size):
+    print("\n=== Etap 3: Testowanie modelu z najlepszymi hiperparametrami ===")
+    test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    
     model.eval()
     with torch.no_grad():
         X_test, y_test = next(iter(test_loader))
@@ -175,8 +132,70 @@ def test_model(model, test_loader):
         
         return accuracy, recall, precision, f1
 
-# Testowanie
-accuracy, recall, precision, f1 = test_model(model, test_loader)
+# Automatyczne dostrajanie hiperparametrów
+print("\n=== Rozpoczęcie automatycznego dostrajania hiperparametrów ===")
+param_grid = {
+    'lr': [0.01, 0.001, 0.0001],
+    'dropout': [0, 0.2, 0.4],
+    'batch_size': [64, 128, 256],
+    'hidden_sizes': [
+        [256, 128, 64, 32],  # Oryginalna architektura
+        [128, 64, 32],       # Mniejsza sieć
+        [512, 256, 128]      # Większa sieć
+    ]
+}
+
+best_val_acc = 0
+best_params = {}
+max_attempts = len(param_grid['lr']) * len(param_grid['dropout']) * len(param_grid['batch_size']) * len(param_grid['hidden_sizes'])
+attempt = 0
+
+for lr, dropout, batch_size, hidden_sizes in product(param_grid['lr'], param_grid['dropout'], param_grid['batch_size'], param_grid['hidden_sizes']):
+    attempt += 1
+    print(f"\nPróba {attempt}/{max_attempts} - lr={lr}, dropout={dropout}, batch_size={batch_size}, hidden_sizes={hidden_sizes}")
+    
+    # Inicjalizacja modelu
+    model = HeartDiseaseModel(input_dim=X_train.shape[1], hidden_sizes=hidden_sizes, dropout=dropout)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, verbose=False)
+    pos_weight = torch.tensor([len(y_train) / sum(y_train)])
+    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    
+    # Etap 1: Trening
+    print("--- Trening ---")
+    best_train_acc = train_model(model, X_train_tensor, y_train_tensor, batch_size, epochs=50, optimizer=optimizer, criterion=criterion, scheduler=scheduler)
+    torch.save(model.state_dict(), 'heart_disease_model_after_training.pth')
+    print("Model po treningu zapisany jako 'heart_disease_model_after_training.pth'.")
+    
+    # Etap 2: Walidacja
+    print("--- Walidacja ---")
+    val_acc = validate_model(model, X_val_tensor, y_val_tensor)
+    torch.save(model.state_dict(), 'heart_disease_model_after_validation.pth')
+    print("Model po walidacji zapisany jako 'heart_disease_model_after_validation.pth'.")
+    
+    # Ocena różnicy i aktualizacja najlepszych parametrów
+    diff = best_train_acc * 100 - val_acc
+    print(f"Różnica trening-walidacja: {diff:.2f}%, Val Acc: {val_acc:.2f}%")
+    
+    if val_acc > best_val_acc and diff < 10:  # Próg 10% dla różnicy
+        best_val_acc = val_acc
+        best_params = {'lr': lr, 'dropout': dropout, 'batch_size': batch_size, 'hidden_sizes': hidden_sizes}
+        torch.save(model.state_dict(), 'heart_disease_model_best.pth')
+        print(f"Znaleziono lepsze parametry: lr={lr}, dropout={dropout}, batch_size={batch_size}, hidden_sizes={hidden_sizes}, val_acc={val_acc:.2f}%")
+    
+    # Wczesne zatrzymanie
+    if diff < 5 and val_acc > 85:  # Można dostosować próg
+        print("Wyniki są zadowalające, przerywam dostrajanie.")
+        break
+
+print(f"\nNajlepsze hiperparametry: {best_params}, val_acc={best_val_acc:.2f}%")
+
+# Wczytanie najlepszego modelu
+model = HeartDiseaseModel(input_dim=X_train.shape[1], hidden_sizes=best_params['hidden_sizes'], dropout=best_params['dropout'])
+model.load_state_dict(torch.load('heart_disease_model_best.pth'))
+
+# Etap 3: Testowanie
+accuracy, recall, precision, f1 = test_model(model, X_test_tensor, y_test_tensor, best_params['batch_size'])
 
 # Zapis metryk i modelu
 metrics = {
