@@ -193,7 +193,7 @@ def start_scripts():
         print("Wczytywanie modelu i skalera po treningu...")
         load_model_and_scaler()
     else:
-        # Wczytaj istniejący model i scaler
+        # Wczytaj istniejący model i scaler z plików
         print("Wczytywanie istniejącego modelu i skalera...")
         load_model_and_scaler()
 
