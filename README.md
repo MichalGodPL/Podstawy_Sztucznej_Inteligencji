@@ -1,6 +1,7 @@
 # Instrukcja / Instruction
 
 ## 🇵🇱 Wersja Polska
+
 Ten kod służy do przewidywania ataku serca z wykorzystaniem modelu AI PyTorch.
 
 ### Pobieranie
