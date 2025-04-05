@@ -174,3 +174,59 @@ p, label, th, td, button {
         font-size: 1.125rem;
     }
 }
+
+/* Animacja kropek ładowania */
+.loading-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    background-color: #1E40AF; /* Kolor niebieski jak przyciski (bg-blue-700) */
+    border-radius: 50%;
+    margin: 0 8px;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.8); }
+    40% { transform: scale(1.2); }
+}
+
+/* Styl dla logo AGH i jego kontenera */
+.agh-logo-container {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(45deg, #A6192E, #1A3C34);
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    padding: 8px;
+}
+
+.agh-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+/* Styl dla wyśrodkowania ikony kosza */
+.action-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
