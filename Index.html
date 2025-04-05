@@ -158,10 +158,8 @@
             this.formSubmitted = true;
             this.activeTab = 'results';
 
-            window.pywebview.api.run_script('PyTorch')
-                .then(() => {
-                    return window.pywebview.api.predict(dataToSend);
-                })
+            // Wywołaj bezpośrednio predykcję bez ponownego treningu modelu
+            window.pywebview.api.predict(dataToSend)
                 .then(data => {
                     if (data.error) {
                         alert('Wystąpił błąd: ' + data.error);
@@ -205,7 +203,7 @@
                 })
                 .catch(error => {
                     console.error('Błąd:', error);
-                    alert('Wystąpił problem z predykcją lub treningiem.');
+                    alert('Wystąpił problem z predykcją.');
                     this.isTraining = false;
                 });
         }
