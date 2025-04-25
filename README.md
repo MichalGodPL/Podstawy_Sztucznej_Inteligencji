@@ -1,4 +1,8 @@
+<center>
+
 # Predykcja Ataku Serca z Modelem AI PyTorch / Heart Attack Prediction with PyTorch AI Model
+
+</center>
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/) 
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange)](https://pytorch.org/)
@@ -90,8 +94,9 @@ This repository contains a PyTorch-based AI model designed for heart attack pred
 ---
 
 ## Zrzuty Ekranu / Screenshots
-- ![Interfejs Główny / Main Interface](1.png)
-- ![Wyniki Predykcji dla Starego Mężczyzny / Prediction Results for Old Man](2.png)
-- ![Formularz Aplikacji / App Form](3.png)
-- ![Wyniki Predykcji dla Młodego Mężczyzny / Prediction Results for Young Man](4.png)
-- ![Wyniki Predykcji dla Starej Kobiety / Prediction Results for Old Woman](2.png)
+
+![](1.png)
+![](2.png)
+![](3.png)
+![](4.png)
+![](5.png)
