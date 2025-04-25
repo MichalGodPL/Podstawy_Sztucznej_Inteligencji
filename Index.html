@@ -1,573 +1,1130 @@
 <!DOCTYPE html>
+
 <html lang="pl">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Medical Dashboard</title>
     
+
     <!-- Import Tailwind CSS -->
+
     <script src="https://cdn.tailwindcss.com"></script>
     
+
     <!-- Import Alpine.js -->
+
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
+
     <!-- Import Poppins font -->
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+
     <!-- Import Font Awesome for icons -->
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+
     <!-- Twój plik CSS -->
+
     <link rel="stylesheet" href="Style.css">
 
+
     <!-- Skrypt do wykrycia pywebview -->
+
     <script>
+
         window.addEventListener('pywebviewready', function() {
+
             console.log('pywebview gotowe');
+
         });
+
     </script>
+
 </head>
+
+
 <body class="text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+
     <div x-data="{
+
         showForm: false,
+
         activeTab: 'dashboard',
+
         currentDate: new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }),
+
         testHistory: [],
+
         modelMetrics: {
+
             accuracy: 'N/A',
+
             precision: 'N/A',
+
             recall: 'N/A',
+
             f1_score: 'N/A'
+
         },
+
         isTraining: false,
+
         formSubmitted: false,
+
         formData: {
+
             age: '',
+
             sex: 'Mężczyzna',
+
             cholesterol: '',
+
             blood_pressure: '',
+
             heart_rate: '',
+
             diabetes: false,
+
             smoking: false,
+
             exercise_hours_per_week: '',
+
             diet: 'Zdrowa',
+
             obesity: false,
+
             alcohol_consumption: false,
+
             medication_use: false,
+
             stress_level: '',
+
             sedentary_hours_per_day: '',
+
             triglycerides: '',
+
             sleep_hours_per_day: '',
+
             continent: 'Europa'
+
         },
+
         scrollPositions: {
+
             dashboard: 0,
+
             assessment: 0,
+
             results: 0
+
         },
+
         saveScrollPosition(tab) {
+
             const scrollContainer = this.$refs[`scrollContainer-${tab}`];
+
             if (scrollContainer) {
+
                 this.scrollPositions[tab] = scrollContainer.scrollTop;
-            }
-        },
-        restoreScrollPosition(tab) {
-            const scrollContainer = this.$refs[`scrollContainer-${tab}`];
-            if (scrollContainer) {
-                scrollContainer.scrollTop = this.scrollPositions[tab];
-            }
-        },
-        isFormValid() {
-            return this.formData.age !== '' &&
-                   this.formData.cholesterol !== '' &&
-                   this.formData.blood_pressure !== '' &&
-                   this.formData.heart_rate !== '' &&
-                   this.formData.exercise_hours_per_week !== '' &&
-                   this.formData.stress_level !== '' &&
-                   this.formData.sedentary_hours_per_day !== '' &&
-                   this.formData.triglycerides !== '' &&
-                   this.formData.sleep_hours_per_day !== '';
-        },
-        submitForm() {
-            if (!this.isFormValid()) {
-                alert('Proszę wypełnić wszystkie pola formularza.');
-                return;
+
             }
 
+        },
+
+        restoreScrollPosition(tab) {
+
+            const scrollContainer = this.$refs[`scrollContainer-${tab}`];
+
+            if (scrollContainer) {
+
+                scrollContainer.scrollTop = this.scrollPositions[tab];
+
+            }
+
+        },
+
+        isFormValid() {
+
+            return this.formData.age !== '' &&
+
+                   this.formData.cholesterol !== '' &&
+
+                   this.formData.blood_pressure !== '' &&
+
+                   this.formData.heart_rate !== '' &&
+
+                   this.formData.exercise_hours_per_week !== '' &&
+
+                   this.formData.stress_level !== '' &&
+
+                   this.formData.sedentary_hours_per_day !== '' &&
+
+                   this.formData.triglycerides !== '' &&
+
+                   this.formData.sleep_hours_per_day !== '';
+
+        },
+
+        submitForm() {
+
+            if (!this.isFormValid()) {
+
+                alert('Proszę wypełnić wszystkie pola formularza.');
+
+                return;
+
+            }
+
+
             const date = new Date().toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' });
+
             const time = new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
             
             const dataToSend = {
+
                 ...this.formData,
+
                 date: date,
+
                 time: time
+
             };
 
+
             this.isTraining = true;
+
             this.formSubmitted = true;
+
             this.activeTab = 'results';
 
+
             // Wywołaj bezpośrednio predykcję bez ponownego treningu modelu
+
             window.pywebview.api.predict(dataToSend)
+
                 .then(data => {
+
                     if (data.error) {
+
                         alert('Wystąpił błąd: ' + data.error);
+
                         return;
                     }
+
                     this.testHistory.push({
+
                         date: data.date,
+
                         time: data.time,
+
                         age: data.age,
+
                         cholesterol: data.cholesterol,
+
                         blood_pressure: data.blood_pressure,
+
                         heart_rate: data.heart_rate,
+
                         risk: data.risk
+                        
                     });
+
+
                     this.modelMetrics = {
+
                         accuracy: data.metrics?.accuracy || 'N/A',
+
                         precision: data.metrics?.precision || 'N/A',
+
                         recall: data.metrics?.recall || 'N/A',
+
                         f1_score: data.metrics?.f1_score || 'N/A'
+
                     };
+
                     this.isTraining = false;
+
                     this.formData = {
+
                         age: '',
+
                         sex: 'Mężczyzna',
+
                         cholesterol: '',
+
                         blood_pressure: '',
+
                         heart_rate: '',
+
                         diabetes: false,
+
                         smoking: false,
+
                         exercise_hours_per_week: '',
+
                         diet: 'Zdrowa',
+
                         obesity: false,
+
                         alcohol_consumption: false,
+
                         medication_use: false,
+
                         stress_level: '',
+
                         sedentary_hours_per_day: '',
+
                         triglycerides: '',
+
                         sleep_hours_per_day: '',
+
                         continent: 'Europa'
+
                     };
+
                 })
+
+
                 .catch(error => {
+
                     console.error('Błąd:', error);
+                    
                     alert('Wystąpił problem z predykcją.');
+
                     this.isTraining = false;
+
                 });
+
         }
+
     }" 
+
     x-init="restoreScrollPosition('dashboard')"
+
     class="w-full max-w-5xl main-container rounded-3xl overflow-hidden flex flex-col" style="height: 80vh;">
         
+
         <!-- Zawartość -->
+
         <div class="flex-1 relative px-6 mx-4 mb-4">
+
+
             <!-- Dashboard -->
+
             <div x-show="activeTab === 'dashboard'" 
+
                  x-transition:enter="transition ease-in-out duration-300 transform" 
+
                  x-transition:enter-start="-translate-x-10 opacity-0" 
+
                  x-transition:enter-end="translate-x-0 opacity-100" 
+
                  x-transition:leave="transition ease-in-out duration-200 transform" 
+
                  x-transition:leave-start="translate-x-0 opacity-100" 
+
                  x-transition:leave-end="translate-x-10 opacity-0"
+
                  @after-enter="restoreScrollPosition('dashboard')"
+
                  @before-leave="saveScrollPosition('dashboard')"
+
                  class="absolute inset-0">
+
                 <div x-ref="scrollContainer-dashboard" 
+
                      @scroll="saveScrollPosition('dashboard')"
+
                      class="h-full overflow-y-auto no-scrollbar space-y-6 p-4">
+
                     <div class="flex justify-between items-center">
+
                         <div>
+
                             <h1 class="text-primary text-2xl">Dzień Dobry!</h1>
+
                             <p class="text-sm text-secondary">Jak się czujesz?</p>
+
                         </div>
+
                         <p class="text-sm text-secondary" x-text="currentDate"></p>
+
                     </div>
+
 
                     <div class="banner-bg p-4 rounded-xl flex justify-between items-center animate-banner">
+
                         <div>
+
                             <h2 class="text-white text-lg">Projekt powstał we wsparciu</h2>
+
                             <p class="text-sm text-gray-200">Akademii Górniczo-Hutniczej</p>
+
                             <a href="https://www.agh.edu.pl/" target="_blank" class="mt-2 inline-block px-4 py-2 button-bg font-semibold rounded-full">Dowiedz się więcej</a>
+
                         </div>
+
+
                         <!-- Kontener z logo AGH -->
+
                         <div class="agh-logo-container">
+
                             <img src="agh-logo.png" alt="AGH Logo" class="agh-logo">
+
                         </div>
+
                     </div>
 
+
                     <div>
+                        
                         <h2 class="text-primary mb-2 text-lg">Parametry życiowe</h2>
+
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
                             <div class="section-bg p-4 rounded-xl animate-tile">
+
                                 <p class="text-sm text-secondary">Temperatura ciała</p>
+
                                 <p class="text-xl font-semibold text-primary">36.2 °C</p>
+
                             </div>
+
                             <div class="section-bg p-4 rounded-xl animate-tile">
+
                                 <p class="text-sm text-secondary">Puls</p>
+
                                 <p class="text-xl font-semibold text-primary">85 bpm</p>
+
                             </div>
+
                             <div class="section-bg p-4 rounded-xl animate-tile">
+
                                 <p class="text-sm text-secondary">Ciśnienie krwi</p>
+
                                 <p class="text-xl font-semibold text-primary">80/70 mmHg</p>
+
                             </div>
+
                             <div class="section-bg p-4 rounded-xl animate-tile">
+
                                 <p class="text-sm text-secondary">Częstość oddechów</p>
+
                                 <p class="text-xl font-semibold text-primary">15 oddechów/m</p>
+
                             </div>
+
                         </div>
+
                     </div>
 
+
                     <div>
+
                         <h2 class="text-primary mb-2 text-lg">Przydatne Opcje</h2>
+
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
                             <a href="Kamien.jpg" target="_blank" class="section-bg p-4 rounded-xl flex items-center animate-tile">
+
                                 <div class="icon-circle bg-green-500 mr-4">
+                                    
                                     <i class="fas fa-flag-checkered text-white text-lg"></i>
+
                                 </div>
+
                                 <div>
+
                                     <p class="text-sm font-semibold text-primary">Zobacz Kamienie Milowe</p>
+
                                 </div>
+
                             </a>
+
+
                             <a href="https://www.znanylekarz.pl/szukaj?q=kardiolog&loc=Krak%C3%B3w&filters%5Bspecializations%5D%5B%5D=62" target="_blank" class="section-bg p-4 rounded-xl flex items-center animate-tile">
+
                                 <div class="icon-circle bg-orange-500 mr-4">
+
                                     <i class="fas fa-stethoscope text-white text-lg"></i>
+
                                 </div>
+
                                 <div>
+
                                     <p class="text-sm font-semibold text-primary">Znajdź kardiologa</p>
+
                                 </div>
+
                             </a>
+
+
                             <a href="https://pl.wikipedia.org/wiki/Zawa%C5%82_mi%C4%99%C5%9Bnia_sercowego" target="_blank" class="section-bg p-4 rounded-xl flex items-center animate-tile">
+
                                 <div class="icon-circle bg-cyan-500 mr-4">
+
                                     <i class="fas fa-info-circle text-white text-lg"></i>
+
                                 </div>
+
                                 <div>
+
                                     <p class="text-sm font-semibold text-primary">Zawał mięśnia sercowego</p>
+
                                 </div>
+
                             </a>
+
                         </div>
+
                     </div>
+
 
                     <!-- Historia Testów na dole -->
+
                     <div>
+
                         <h2 class="text-primary mb-2 text-lg">Historia Testów</h2>
+
                         <div class="section-bg rounded-xl overflow-hidden">
+
                             <table class="w-full text-left">
+
                                 <thead>
+
                                     <tr class="table-header-bg text-secondary text-sm">
+
                                         <th class="p-3">Data</th>
+
                                         <th class="p-3">Godzina</th>
+
                                         <th class="p-3">Wiek</th>
+
                                         <th class="p-3">Cholesterol</th>
+
                                         <th class="p-3">Ciśnienie</th>
+
                                         <th class="p-3">Tętno</th>
+
                                         <th class="p-3">Ryzyko</th>
+
                                         <th class="p-3 text-center">Akcje</th>
+
                                     </tr>
+
                                 </thead>
+
+                                
                                 <tbody>
+
                                     <template x-for="(test, index) in testHistory" :key="test.date + test.time">
+
                                         <tr class="border-t table-border animate-row">
+
                                             <td class="p-3" x-text="test.date"></td>
+
                                             <td class="p-3" x-text="test.time"></td>
+                                            
                                             <td class="p-3" x-text="test.age"></td>
+
                                             <td class="p-3" x-text="test.cholesterol"></td>
+
                                             <td class="p-3" x-text="test.blood_pressure"></td>
+
                                             <td class="p-3" x-text="test.heart_rate"></td>
+
                                             <td class="p-3" x-text="test.risk"></td>
+
                                             <td class="p-3 action-cell">
+
                                                 <button @click="testHistory.splice(index, 1)" class="text-red-500 hover:text-red-400" title="Usuń">
+
                                                     <i class="fas fa-trash-alt"></i>
+
                                                 </button>
+
                                             </td>
+
                                         </tr>
+
+
                                     </template>
+
                                     <tr x-show="testHistory.length === 0" class="border-t table-border">
+
                                         <td colspan="8" class="p-3 text-center text-secondary">Brak testów w historii.</td>
+
                                     </tr>
+
                                 </tbody>
+
                             </table>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
 
             <!-- Formularz -->
+
             <form x-show="activeTab === 'assessment'" 
+
                   x-transition:enter="transition ease-in-out duration-300 transform" 
+
                   x-transition:enter-start="-translate-x-10 opacity-0" 
+
                   x-transition:enter-end="translate-x-0 opacity-100" 
+                  
                   x-transition:leave="transition ease-in-out duration-200 transform" 
+
                   x-transition:leave-start="translate-x-0 opacity-100" 
+
                   x-transition:leave-end="translate-x-10 opacity-0"
+
                   @after-enter="restoreScrollPosition('assessment')"
+
                   @before-leave="saveScrollPosition('assessment')"
+
                   class="absolute inset-0" x-on:submit.prevent="submitForm">
+
                 <div x-ref="scrollContainer-assessment" 
+
                      @scroll="saveScrollPosition('assessment')"
+
                      class="h-full overflow-y-auto no-scrollbar space-y-4 p-4">
+
+
                     <!-- Sekcja 1: Podstawowe dane -->
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
                         <div>
+
                             <label for="age" class="block text-[0.75rem] font-medium text-primary mb-1">Wiek</label>
+
                             <input type="number" id="age" x-model="formData.age" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj wiek" required>
+
                         </div>
+
                         <div>
+
                             <label for="sex" class="block text-[0.75rem] font-medium text-primary mb-1">Płeć</label>
+
                             <select id="sex" x-model="formData.sex" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white" required>
+
                                 <option>Mężczyzna</option>
+
                                 <option>Kobieta</option>
+
                             </select>
+
                         </div>
+
                     </div>
+
 
                     <!-- Sekcja 2: Parametry zdrowotne -->
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
                         <div>
+
                             <label for="cholesterol" class="block text-[0.75rem] font-medium text-primary mb-1">Poziom cholesterolu (mg/dL)</label>
+
                             <input type="number" id="cholesterol" x-model="formData.cholesterol" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj poziom cholesterolu" required>
+
                         </div>
+
                         <div>
+
                             <label for="blood_pressure" class="block text-[0.75rem] font-medium text-primary mb-1">Ciśnienie krwi (mmHg)</label>
+
                             <input type="number" id="blood_pressure" x-model="formData.blood_pressure" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj ciśnienie" required>
+
                         </div>
+
                         <div>
+
                             <label for="heart_rate" class="block text-[0.75rem] font-medium text-primary mb-1">Tętno (BPM)</label>
+
                             <input type="number" id="heart_rate" x-model="formData.heart_rate" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj tętno" required>
+
                         </div>
+
                     </div>
+
 
                     <!-- Sekcja 3: Checkboxy (Tak/Nie) -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                        <div class="flex items-center space-x-2">
-                            <label for="diabetes" class="block text-[0.75rem] font-medium text-primary mb-1">Cukrzyca</label>
-                            <div class="relative">
-                                <input type="checkbox" id="diabetes" x-model="formData.diabetes" class="opacity-0 absolute h-6 w-6">
-                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.diabetes ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
-                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.diabetes"></i>
-                                </div>
-                            </div>
-                            <span class="text-sm text-secondary" x-text="formData.diabetes ? 'Tak' : 'Nie'"></span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <label for="smoking" class="block text-[0.75rem] font-medium text-primary mb-1">Palenie</label>
-                            <div class="relative">
-                                <input type="checkbox" id="smoking" x-model="formData.smoking" class="opacity-0 absolute h-6 w-6">
-                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.smoking ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
-                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.smoking"></i>
-                                </div>
-                            </div>
-                            <span class="text-sm text-secondary" x-text="formData.smoking ? 'Tak' : 'Nie'"></span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <label for="obesity" class="block text-[0.75rem] font-medium text-primary mb-1">Otyłość</label>
-                            <div class="relative">
-                                <input type="checkbox" id="obesity" x-model="formData.obesity" class="opacity-0 absolute h-6 w-6">
-                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.obesity ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
-                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.obesity"></i>
-                                </div>
-                            </div>
-                            <span class="text-sm text-secondary" x-text="formData.obesity ? 'Tak' : 'Nie'"></span>
-                        </div>
-                    </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
                         <div class="flex items-center space-x-2">
-                            <label for="alcohol_consumption" class="block text-[0.75rem] font-medium text-primary mb-1">Spożycie alkoholu</label>
+
+                            <label for="diabetes" class="block text-[0.75rem] font-medium text-primary mb-1">Cukrzyca</label>
+
                             <div class="relative">
-                                <input type="checkbox" id="alcohol_consumption" x-model="formData.alcohol_consumption" class="opacity-0 absolute h-6 w-6">
-                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.alcohol_consumption ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
-                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.alcohol_consumption"></i>
+
+                                <input type="checkbox" id="diabetes" x-model="formData.diabetes" class="opacity-0 absolute h-6 w-6">
+
+                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.diabetes ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
+
+                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.diabetes"></i>
+
                                 </div>
+
                             </div>
-                            <span class="text-sm text-secondary" x-text="formData.alcohol_consumption ? 'Tak' : 'Nie'"></span>
+
+                            <span class="text-sm text-secondary" x-text="formData.diabetes ? 'Tak' : 'Nie'"></span>
+
                         </div>
+
+
                         <div class="flex items-center space-x-2">
-                            <label for="medication_use" class="block text-[0.75rem] font-medium text-primary mb-1">Używanie leków</label>
+
+                            <label for="smoking" class="block text-[0.75rem] font-medium text-primary mb-1">Palenie</label>
+
                             <div class="relative">
-                                <input type="checkbox" id="medication_use" x-model="formData.medication_use" class="opacity-0 absolute h-6 w-6">
-                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.medication_use ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
-                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.medication_use"></i>
+
+                                <input type="checkbox" id="smoking" x-model="formData.smoking" class="opacity-0 absolute h-6 w-6">
+
+                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.smoking ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
+
+                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.smoking"></i>
+
                                 </div>
+
                             </div>
-                            <span class="text-sm text-secondary" x-text="formData.medication_use ? 'Tak' : 'Nie'"></span>
+
+                            <span class="text-sm text-secondary" x-text="formData.smoking ? 'Tak' : 'Nie'"></span>
+
                         </div>
+
+
+                        <div class="flex items-center space-x-2">
+
+                            <label for="obesity" class="block text-[0.75rem] font-medium text-primary mb-1">Otyłość</label>
+
+                            <div class="relative">
+
+                                <input type="checkbox" id="obesity" x-model="formData.obesity" class="opacity-0 absolute h-6 w-6">
+
+                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.obesity ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
+
+                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.obesity"></i>
+
+                                </div>
+
+                            </div>
+
+                            <span class="text-sm text-secondary" x-text="formData.obesity ? 'Tak' : 'Nie'"></span>
+
+                        </div>
+
                     </div>
+
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+                        <div class="flex items-center space-x-2">
+
+                            <label for="alcohol_consumption" class="block text-[0.75rem] font-medium text-primary mb-1">Spożycie alkoholu</label>
+
+                            <div class="relative">
+
+                                <input type="checkbox" id="alcohol_consumption" x-model="formData.alcohol_consumption" class="opacity-0 absolute h-6 w-6">
+
+                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.alcohol_consumption ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
+
+                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.alcohol_consumption"></i>
+
+                                </div>
+
+                            </div>
+
+                            <span class="text-sm text-secondary" x-text="formData.alcohol_consumption ? 'Tak' : 'Nie'"></span>
+
+                        </div>
+
+                        <div class="flex items-center space-x-2">
+
+                            <label for="medication_use" class="block text-[0.75rem] font-medium text-primary mb-1">Używanie leków</label>
+
+                            <div class="relative">
+
+                                <input type="checkbox" id="medication_use" x-model="formData.medication_use" class="opacity-0 absolute h-6 w-6">
+
+                                <div class="custom-checkbox h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-200" :class="formData.medication_use ? 'bg-[#A6192E]' : 'bg-[#2A2A2A] border border-gray-600'">
+
+                                    <i class="fas fa-check text-white text-sm animate-check" x-show="formData.medication_use"></i>
+
+                                </div>
+
+                            </div>
+
+                            <span class="text-sm text-secondary" x-text="formData.medication_use ? 'Tak' : 'Nie'"></span>
+
+                        </div>
+
+                    </div>
+
 
                     <!-- Sekcja 4: Styl życia -->
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
                         <div>
+
                             <label for="exercise_hours_per_week" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny ćwiczeń tygodniowo</label>
+
                             <input type="number" id="exercise_hours_per_week" x-model="formData.exercise_hours_per_week" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Godziny tygodniowo" required>
+
                         </div>
+
                         <div>
+
                             <label for="sedentary_hours_per_day" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny siedzące dziennie</label>
+
                             <input 
+
                                 type="number" 
+
                                 id="sedentary_hours_per_day" 
+
                                 x-model="formData.sedentary_hours_per_day" 
+
                                 min="0" 
+
                                 max="24" 
+
                                 maxlength="2" 
+
                                 class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" 
+
                                 placeholder="Godziny dziennie" 
+
                                 required
+
                                 @input="if ($event.target.value > 24) $event.target.value = 24; if ($event.target.value < 0) $event.target.value = 0;"
+
                             >
+
                         </div>
+
+
                         <div>
+
                             <label for="sleep_hours_per_day" class="block text-[0.75rem] font-medium text-primary mb-1">Godziny snu dziennie</label>
+
                             <input 
+
                                 type="number" 
+
                                 id="sleep_hours_per_day" 
+
                                 x-model="formData.sleep_hours_per_day" 
+
                                 min="0" 
+
                                 max="24" 
+
                                 maxlength="2" 
+
                                 class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" 
+
                                 placeholder="Godziny dziennie" 
+
                                 required
+
                                 @input="if ($event.target.value > 24) $event.target.value = 24; if ($event.target.value < 0) $event.target.value = 0;"
+
                             >
+
                         </div>
+
                     </div>
+
 
                     <!-- Sekcja 5: Poziom stresu i dieta -->
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
                         <div>
+
                             <label for="stress_level" class="block text-[0.75rem] font-medium text-primary mb-1">Poziom stresu (0-9)</label>
+
                             <input type="number" id="stress_level" x-model="formData.stress_level" min="0" max="9" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="0-9" required>
+
                         </div>
+
+
                         <div>
+
                             <label for="diet" class="block text-[0.75rem] font-medium text-primary mb-1">Jakość diety</label>
+
                             <select id="diet" x-model="formData.diet" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white" required>
+
                                 <option>Zdrowa</option>
+
                                 <option>Umiarkowana</option>
+
                                 <option>Słaba</option>
+                                
                             </select>
+
                         </div>
+
                     </div>
+
 
                     <!-- Sekcja 6: Dane zdrowotne i geograficzne -->
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
                         <div>
+
                             <label for="triglycerides" class="block text-[0.75rem] font-medium text-primary mb-1">Poziom trójglicerydów (mg/dL)</label>
+
                             <input type="number" id="triglycerides" x-model="formData.triglycerides" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white placeholder-gray-500 no-spinner" placeholder="Podaj poziom trójglicerydów" required>
+
                         </div>
+
                         <div>
+
                             <label for="continent" class="block text-[0.75rem] font-medium text-primary mb-1">Kontynent</label>
+
                             <select id="continent" x-model="formData.continent" class="w-full p-3 section-bg border border-gray-700 rounded-xl text-white" required>
+
                                 <option>Afryka</option>
+                                
                                 <option>Ameryka Północna</option>
+
                                 <option>Ameryka Południowa</option>
+
                                 <option>Azja</option>
+
                                 <option>Australia</option>
+
                                 <option>Europa</option>
+
                             </select>
+
                         </div>
+
                     </div>
+
                     
                     <!-- Przycisk Zatwierdź -->
+
                     <div class="text-center mt-6">
+
                         <button type="submit" 
+
                                 :disabled="!isFormValid() || isTraining" 
+
                                 :class="{'bg-blue-700 hover:bg-blue-800': isFormValid() && !isTraining, 'bg-gray-500 cursor-not-allowed': !isFormValid() || isTraining}" 
+
                                 class="w-full py-3 text-white font-semibold rounded-xl transition">Zatwierdź</button>
+
                     </div>
+
                 </div>
+
             </form>
 
+
             <!-- Wyniki -->
+
             <div x-show="activeTab === 'results'" 
+
                  x-transition:enter="transition ease-in-out duration-300 transform" 
+
                  x-transition:enter-start="-translate-x-10 opacity-0" 
+
                  x-transition:enter-end="translate-x-0 opacity-100" 
+
                  x-transition:leave="transition ease-in-out duration-200 transform" 
+
                  x-transition:leave-start="translate-x-0 opacity-100" 
+
                  x-transition:leave-end="translate-x-10 opacity-0"
+
                  @after-enter="restoreScrollPosition('results')"
+
                  @before-leave="saveScrollPosition('results')"
+
                  class="absolute inset-0">
+
                 <div x-ref="scrollContainer-results" 
+
                      @scroll="saveScrollPosition('results')"
+
                      class="h-full overflow-y-auto no-scrollbar space-y-6 p-4">
+
                     <template x-if="!formSubmitted || isTraining">
+
                         <div class="loading-dots">
+
                             <div class="dot"></div>
+
                             <div class="dot"></div>
+
                             <div class="dot"></div>
+
                         </div>
+
                     </template>
+
                     <template x-if="formSubmitted && !isTraining">
+
                         <div>
+
                             <h2 class="text-primary mb-4 text-lg">Wyniki</h2>
                             
+
                             <!-- Kafelki z metrykami modelu -->
+
                             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
                                 <div class="section-bg p-4 rounded-xl animate-tile">
+
                                     <p class="text-sm text-secondary">Dokładność</p>
+
                                     <p class="text-xl font-semibold text-primary" x-text="modelMetrics.accuracy"></p>
+
                                 </div>
+
                                 <div class="section-bg p-4 rounded-xl animate-tile">
+
                                     <p class="text-sm text-secondary">Precyzja</p>
+
                                     <p class="text-xl font-semibold text-primary" x-text="modelMetrics.precision"></p>
+                                    
                                 </div>
+
                                 <div class="section-bg p-4 rounded-xl animate-tile">
+
                                     <p class="text-sm text-secondary">Czułość</p>
+
                                     <p class="text-xl font-semibold text-primary" x-text="modelMetrics.recall"></p>
+
                                 </div>
+
                                 <div class="section-bg p-4 rounded-xl animate-tile">
+
                                     <p class="text-sm text-secondary">F1-Score</p>
+
                                     <p class="text-xl font-semibold text-primary" x-text="modelMetrics.f1_score"></p>
+
                                 </div>
+
                             </div>
+
 
                             <!-- Tabela z wynikami z odstępem -->
+
                             <div class="mt-6 section-bg rounded-xl overflow-hidden">
+
                                 <table class="w-full text-left">
+
                                     <thead>
+
                                         <tr class="table-header-bg text-secondary text-sm">
+
                                             <th class="p-3">Data</th>
+
                                             <th class="p-3">Godzina</th>
+
                                             <th class="p-3">Wiek</th>
+
                                             <th class="p-3">Cholesterol</th>
+
                                             <th class="p-3">Ciśnienie</th>
+
                                             <th class="p-3">Tętno</th>
+
                                             <th class="p-3">Ryzyko</th>
+
                                         </tr>
+
                                     </thead>
+
                                     <tbody>
+
                                         <template x-for="test in testHistory" :key="test.date + test.time">
+
                                             <tr class="border-t table-border animate-row">
+
                                                 <td class="p-3" x-text="test.date"></td>
+
                                                 <td class="p-3" x-text="test.time"></td>
+
                                                 <td class="p-3" x-text="test.age"></td>
+
                                                 <td class="p-3" x-text="test.cholesterol"></td>
+
                                                 <td class="p-3" x-text="test.blood_pressure"></td>
+
                                                 <td class="p-3" x-text="test.heart_rate"></td>
+
                                                 <td class="p-3" x-text="test.risk"></td>
+
                                             </tr>
+
                                         </template>
+
                                         <tr x-show="testHistory.length === 0" class="border-t table-border">
+
                                             <td colspan="7" class="p-3 text-center text-secondary">Brak wyników w historii.</td>
+
                                         </tr>
+
                                     </tbody>
+
                                 </table>
+
                             </div>
+
                         </div>
+
                     </template>
+                    
                 </div>
+
             </div>
+
         </div>
 
+
         <!-- Zakładki - Nieco szersze i wyśrodkowane -->
+
         <div class="p-4 mt-6">
+
             <div class="flex justify-center space-x-6 section-bg p-3 rounded-2xl shadow-lg border border-gray-700 w-[720px] mx-auto">
+
                 <button @click="activeTab = 'dashboard'" :class="{'bg-blue-700 text-white': activeTab === 'dashboard', 'bg-gray-700 text-gray-300': activeTab !== 'dashboard'}" class="px-8 py-2 rounded-xl transition font-medium">Panel</button>
+
                 <button @click="activeTab = 'assessment'" :class="{'bg-blue-700 text-white': activeTab === 'assessment', 'bg-gray-700 text-gray-300': activeTab !== 'assessment'}" class="px-8 py-2 rounded-xl transition font-medium">Formularz</button>
+
                 <button @click="activeTab = 'results'" :class="{'bg-blue-700 text-white': activeTab === 'results', 'bg-gray-700 text-gray-300': activeTab !== 'results'}" class="px-8 py-2 rounded-xl transition font-medium">Wynik</button>
+
             </div>
+
         </div>
+
     </div>
+
 </body>
+
 </html>
